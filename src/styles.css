@@ -215,6 +215,81 @@ details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
 /* Druid form aura base */
 .form-aura { transition: opacity .7s ease, background .7s ease; }
 
+/* ===== Hero cinematic pass ===== */
+
+/* Moving fog layers */
+@keyframes fog-drift-1 { 0% { transform: translate3d(-5%, 0, 0); } 100% { transform: translate3d(5%, -2%, 0); } }
+@keyframes fog-drift-2 { 0% { transform: translate3d(4%, 1%, 0); } 100% { transform: translate3d(-6%, -1%, 0); } }
+.hero-fog {
+  position: absolute; inset: -10%; pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 30% 70%, oklch(0.7 0.04 280 / 10%), transparent 70%),
+    radial-gradient(50% 40% at 70% 40%, oklch(0.65 0.05 270 / 8%), transparent 70%);
+  mix-blend-mode: screen; filter: blur(40px);
+  animation: fog-drift-1 18s ease-in-out infinite alternate;
+}
+.hero-fog-2 {
+  position: absolute; inset: -10%; pointer-events: none;
+  background: radial-gradient(55% 45% at 50% 60%, oklch(0.8 0.06 78 / 6%), transparent 70%);
+  mix-blend-mode: screen; filter: blur(50px);
+  animation: fog-drift-2 24s ease-in-out infinite alternate;
+}
+
+/* Moving light rays */
+@keyframes rays-sweep { 0% { transform: translateX(-10%) rotate(0deg); opacity: .35; } 50% { opacity: .6; } 100% { transform: translateX(10%) rotate(2deg); opacity: .35; } }
+.hero-rays {
+  position: absolute; inset: -20% -10%; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, oklch(0.85 0.12 80 / 14%) 45%, oklch(0.9 0.1 90 / 20%) 50%, oklch(0.85 0.12 80 / 14%) 55%, transparent 70%);
+  filter: blur(20px); mix-blend-mode: screen;
+  animation: rays-sweep 12s ease-in-out infinite alternate;
+}
+
+/* Enhanced golden particles for hero */
+@utility hero-particles {
+  background-image:
+    radial-gradient(2px 2px at 15% 25%, oklch(0.92 0.1 90), transparent),
+    radial-gradient(1.5px 1.5px at 35% 55%, oklch(0.85 0.12 78), transparent),
+    radial-gradient(2px 2px at 65% 30%, oklch(0.9 0.1 88), transparent),
+    radial-gradient(1px 1px at 80% 70%, oklch(0.88 0.11 80), transparent),
+    radial-gradient(1.5px 1.5px at 50% 85%, oklch(0.92 0.1 90), transparent),
+    radial-gradient(1px 1px at 25% 75%, oklch(0.85 0.12 78), transparent),
+    radial-gradient(2px 2px at 90% 15%, oklch(0.9 0.1 88), transparent),
+    radial-gradient(1px 1px at 5% 50%, oklch(0.88 0.11 80), transparent);
+  background-size: 400px 400px;
+  animation: drift 30s linear infinite;
+  opacity: 0.75;
+}
+
+/* Slow rotating rune ring for hero (two layers, opposite directions) */
+@keyframes spin-reverse { to { transform: rotate(-360deg); } }
+.hero-rune-1 { animation: spin-slow 120s linear infinite; }
+.hero-rune-2 { animation: spin-reverse 160s linear infinite; }
+
+/* Floating logo */
+@keyframes logo-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.hero-logo { animation: logo-float 6s ease-in-out infinite; will-change: transform; }
+
+/* CTA pulse + shine */
+@keyframes cta-pulse {
+  0%,100% { box-shadow: 0 10px 40px -10px oklch(0.8 0.14 78 / 55%), 0 0 0 0 oklch(0.8 0.14 78 / 0%); }
+  50% { box-shadow: 0 10px 40px -10px oklch(0.8 0.14 78 / 65%), 0 0 0 8px oklch(0.8 0.14 78 / 0%); }
+}
+@keyframes cta-shine {
+  0% { transform: translateX(-120%) skewX(-15deg); }
+  60%,100% { transform: translateX(220%) skewX(-15deg); }
+}
+.cta-glow { position: relative; animation: cta-pulse 3s ease-in-out infinite; overflow: hidden; }
+.cta-glow::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 40%;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 35%), transparent);
+  animation: cta-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Video poster fallback */
+.hero-video { object-fit: cover; }
+.hero-poster { object-fit: cover; }
+
 @media (max-width: 767px) {
   .cursor-rune-enabled { cursor: auto; }
 }

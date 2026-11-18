@@ -49,7 +49,7 @@ export const Route = createFileRoute("/")({
 
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 
-function SteamCta({ size = "md", label = "Play Free on Steam" }: { size?: "sm" | "md" | "lg"; label?: string }) {
+function SteamCta({ size = "md", label = "Play Free on Steam", glow = false }: { size?: "sm" | "md" | "lg"; label?: string; glow?: boolean }) {
   const pad = size === "lg" ? "px-8 py-4 text-base sm:text-lg" : size === "sm" ? "px-4 py-2 text-sm" : "px-6 py-3 text-base";
   const mag = useMagnetic<HTMLAnchorElement>(0.3);
   return (
@@ -57,7 +57,7 @@ function SteamCta({ size = "md", label = "Play Free on Steam" }: { size?: "sm" |
       ref={mag}
       href={STEAM_URL}
       {...ext}
-      className={`magnetic bg-gold shadow-gold inline-flex items-center justify-center gap-2 rounded-full font-bold text-primary-foreground transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${pad}`}
+      className={`magnetic bg-gold shadow-gold ${glow ? "cta-glow" : ""} inline-flex items-center justify-center gap-2 rounded-full font-bold text-primary-foreground transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${pad}`}
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M12 2a10 10 0 0 0-9.96 9.04l5.35 2.21a2.8 2.8 0 0 1 1.6-.5l2.39-3.46v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.4 2.43a2.83 2.83 0 0 1-5.6.6L2.3 14.5A10 10 0 1 0 12 2Zm-4.6 15.2-1.23-.5a2.12 2.12 0 1 0 1.15-2.85l1.27.53a1.56 1.56 0 1 1-1.2 2.82Zm9.7-7.47a2.52 2.52 0 1 0-2.52 2.52 2.52 2.52 0 0 0 2.52-2.52Zm-4.4 0a1.89 1.89 0 1 1 1.88 1.89 1.89 1.89 0 0 1-1.88-1.89Z"/></svg>
       {label}
@@ -141,8 +141,14 @@ function Header() {
   );
 }
 
+const HERO_POSTER = "/ragnarok/library-hero-2x.jpg";
+const HERO_VIDEO_WEBM = "/ragnarok/microtrailer.webm";
+const HERO_VIDEO_MP4 = "/ragnarok/microtrailer.mp4";
+const HERO_LOGO = "/ragnarok/logo-2x.png";
+
 function Hero() {
   const bg = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const depth = useMouseParallax<HTMLDivElement>(16);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -156,17 +162,54 @@ function Hero() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
+  // Pause video when offscreen for performance
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { entry.isIntersecting ? v.play().catch(() => {}) : v.pause(); },
+      { threshold: 0.05 },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
   return (
     <section id="top" aria-labelledby="hero-title" className="relative isolate flex min-h-[100svh] items-end overflow-hidden pb-16 pt-28 sm:items-center sm:pb-24">
       <div ref={bg} className="absolute inset-0 -z-20 scale-[1.08] will-change-transform">
-        <img src={ss(0)} alt="" width={1920} height={1080} fetchPriority="high" className="h-full w-full object-cover" />
+        <img src={HERO_POSTER} alt="" width={1920} height={1080} fetchPriority="high" className="hero-poster h-full w-full object-cover" />
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={HERO_POSTER}
+          aria-hidden="true"
+          className="hero-video absolute inset-0 h-full w-full object-cover"
+        >
+          <source src={HERO_VIDEO_WEBM} type="video/webm" />
+          <source src={HERO_VIDEO_MP4} type="video/mp4" />
+        </video>
       </div>
+      <div className="hero-rays absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="hero-fog absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="hero-fog-2 absolute inset-0 -z-10" aria-hidden="true" />
       <div className="bg-hero-overlay absolute inset-0 -z-10" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/70 to-transparent" />
-      <div className="particles pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
-      <div className="rune-ring pointer-events-none absolute -right-40 top-1/2 -z-10 hidden h-[44rem] w-[44rem] -translate-y-1/2 md:block" aria-hidden="true" />
+      <div className="hero-particles pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
+      <div className="rune-ring hero-rune-1 pointer-events-none absolute -right-52 top-1/2 -z-10 hidden h-[48rem] w-[48rem] -translate-y-1/2 md:block" aria-hidden="true" />
+      <div className="rune-ring hero-rune-2 pointer-events-none absolute -left-52 top-1/3 -z-10 hidden h-[36rem] w-[36rem] opacity-40 lg:block" aria-hidden="true" />
       <div ref={depth} className="mx-auto w-full max-w-7xl px-4 sm:px-6 will-change-transform">
         <div className="max-w-2xl">
+          <img
+            src={HERO_LOGO}
+            alt="Ragnarok: The New World"
+            width={460}
+            height={180}
+            fetchPriority="high"
+            className="hero-logo mb-4 h-auto w-[min(70vw,420px)]"
+          />
           <Eyebrow>Officially licensed · Now on Steam</Eyebrow>
           <h1 id="hero-title" className="text-4xl font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">
             <span className="reveal-line"><span style={{ animationDelay: "0.1s" }}>Rediscover Midgard.</span></span><br />
@@ -176,7 +219,7 @@ function Hero() {
             The cross-platform Ragnarok MMORPG. 8 classes, the all-new Druid, refining with no level loss on failure, and resources that keep building while you're away.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <SteamCta size="lg" />
+            <SteamCta size="lg" glow />
             <a href="#first-login" className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-6 py-4 font-semibold transition-colors hover:border-primary hover:text-primary">
               See how to reach First Login <span aria-hidden="true">→</span>
             </a>
