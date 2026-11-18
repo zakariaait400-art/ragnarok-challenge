@@ -141,3 +141,92 @@ h1,h2,h3 { font-family: var(--font-display); letter-spacing: 0.01em; }
 }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes drift { to { background-position: 0 -640px; } }
+
+/* ===== Premium motion pass ===== */
+
+/* Custom fantasy cursor (desktop only, via JS-enabled class) */
+.cursor-rune-enabled { cursor: none; }
+.cursor-rune-dot, .cursor-rune-trail {
+  position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+  border-radius: 9999px; mix-blend-mode: screen;
+  will-change: transform;
+}
+.cursor-rune-dot {
+  width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  background: radial-gradient(circle, oklch(0.9 0.12 88), oklch(0.8 0.14 78 / 60%) 60%, transparent);
+  box-shadow: 0 0 12px 2px oklch(0.85 0.12 80 / 70%);
+  transition: width .18s, height .18s, margin .18s, opacity .18s;
+}
+.cursor-rune-trail {
+  width: 36px; height: 36px; margin: -18px 0 0 -18px;
+  background: radial-gradient(circle, oklch(0.85 0.1 80 / 22%), transparent 70%);
+  transition: width .25s, height .25s, margin .25s, opacity .25s;
+}
+.cursor-rune-active .cursor-rune-dot {
+  width: 22px; height: 22px; margin: -11px 0 0 -11px;
+  background: radial-gradient(circle, oklch(0.92 0.1 90), oklch(0.82 0.15 75 / 70%) 50%, transparent);
+}
+.cursor-rune-active .cursor-rune-trail {
+  width: 56px; height: 56px; margin: -28px 0 0 -28px;
+  background: radial-gradient(circle, oklch(0.85 0.12 78 / 35%), transparent 70%);
+}
+
+/* Magnetic CTA */
+.magnetic { will-change: transform; transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+
+/* 3D tilt card */
+.tilt-card { transform-style: preserve-3d; will-change: transform; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.tilt-card .tilt-inner { transform: translateZ(40px); transition: transform .3s; }
+.tilt-glow { position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity .4s; pointer-events: none; background: radial-gradient(420px circle at var(--mx,50%) var(--my,50%), oklch(0.85 0.12 80 / 16%), transparent 60%); }
+
+/* Title reveal */
+.reveal-line { display: inline-block; overflow: hidden; }
+.reveal-line > span { display: inline-block; transform: translateY(110%); opacity: 0; animation: reveal-up .9s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes reveal-up { to { transform: translateY(0); opacity: 1; } }
+
+/* Step path animation */
+@keyframes path-draw { from { stroke-dashoffset: 100%; } to { stroke-dashoffset: 0; } }
+.step-line { stroke-dasharray: 100%; stroke-dashoffset: 100%; }
+.step-line.animated { animation: path-draw 1.4s ease forwards; }
+@keyframes step-pop { 0% { transform: translateY(14px) scale(.94); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+.step-item { opacity: 0; animation: step-pop .6s cubic-bezier(.2,.8,.2,1) forwards; }
+
+/* Floating device */
+@keyframes float-y { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+@keyframes float-y2 { 0%,100% { transform: translateY(-6px); } 50% { transform: translateY(10px); } }
+
+/* Marquee */
+.marquee-track { display: flex; gap: 1rem; will-change: transform; }
+.marquee-paused .marquee-track { animation-play-state: paused !important; }
+@keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* FAQ smooth accordion */
+.faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.2,.8,.2,1); }
+.faq-answer > div { overflow: hidden; }
+details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
+
+/* Cinematic final CTA glow pulse */
+@keyframes aura-pulse { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: .75; transform: scale(1.06); } }
+.aura-pulse { animation: aura-pulse 6s ease-in-out infinite; }
+
+/* Subtle hero particles drift (slower) */
+@keyframes drift-slow { to { background-position: 0 -1280px; } }
+
+/* Druid form aura base */
+.form-aura { transition: opacity .7s ease, background .7s ease; }
+
+@media (max-width: 767px) {
+  .cursor-rune-enabled { cursor: auto; }
+}
+
+/* Reduced-motion: reveal hidden-by-default elements, allow gallery scroll */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-line > span { transform: none; opacity: 1; }
+  .step-item { opacity: 1; }
+  .marquee-track { animation: none !important; transform: none !important; }
+  .marquee-track ~ * { }
+}
+
+/* Prevent horizontal overflow from parallax/tilt/marquee */
+html, body { overflow-x: hidden; }
+section { overflow-x: clip; }
