@@ -248,10 +248,10 @@ function WhyPortal() {
   const parallax = useMouseParallax<HTMLDivElement>(10);
   const active = hovered ?? mobileIdx;
   const current = WHY[active] ?? WHY[0]!;
-  const radius = 42; // percent from center
+  const radius = 48; // percent from center
 
   return (
-    <section id="why" aria-labelledby="why-title" className="relative overflow-hidden px-4 py-24 sm:px-6">
+    <section id="why" aria-labelledby="why-title" className="relative overflow-hidden px-4 pb-20 pt-36 sm:px-6 sm:pt-40">
       {/* Cinematic dark background */}
       <img
         src={ss(1)}
@@ -260,10 +260,10 @@ function WhyPortal() {
         height={1080}
         loading="lazy"
         decoding="async"
-        className="absolute inset-0 -z-20 h-full w-full object-cover opacity-20 blur-2xl"
+        className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30 blur-2xl"
         aria-hidden="true"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/85 to-background" aria-hidden="true" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/80 to-background" aria-hidden="true" />
       <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-40" aria-hidden="true" />
 
       <div className="mx-auto max-w-7xl">
