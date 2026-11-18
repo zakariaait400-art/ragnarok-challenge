@@ -245,14 +245,13 @@ const WHY = [
 function WhyPortal() {
   const [hovered, setHovered] = useState<number | null>(null);
   const [mobileIdx, setMobileIdx] = useState(0);
-  const parallax = useMouseParallax<HTMLDivElement>(10);
+  const parallax = useMouseParallax<HTMLDivElement>(7);
   const active = hovered ?? mobileIdx;
   const current = WHY[active] ?? WHY[0]!;
-  const radius = 48; // percent from center
+  const orbitRadius = 42;
 
   return (
-    <section id="why" aria-labelledby="why-title" className="relative overflow-hidden px-4 pb-20 pt-36 sm:px-6 sm:pt-40">
-      {/* Cinematic dark background */}
+    <section id="why" aria-labelledby="why-title" className="why-section relative isolate scroll-mt-20 overflow-hidden px-4 pb-24 pt-28 sm:px-6 sm:pt-32">
       <img
         src={ss(1)}
         alt=""
@@ -260,40 +259,45 @@ function WhyPortal() {
         height={1080}
         loading="lazy"
         decoding="async"
-        className="absolute inset-0 -z-20 h-full w-full object-cover opacity-30 blur-2xl"
+        className="why-bg absolute inset-0 -z-30 h-full w-full object-cover"
         aria-hidden="true"
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/80 to-background" aria-hidden="true" />
-      <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-40" aria-hidden="true" />
+      <div className="why-bg-vignette absolute inset-0 -z-20" aria-hidden="true" />
+      <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-35" aria-hidden="true" />
 
       <div className="mx-auto max-w-7xl">
-        <SectionTitle id="why-title" eyebrow="Why this version" title={<>Classic Midgard, <span className="text-gold">less grind pain</span></>} sub="The charm you remember, rebuilt around the things that used to hold you back." />
+        <SectionTitle
+          id="why-title"
+          eyebrow="Why this version"
+          title={<>Classic Midgard, <span className="text-gold">less grind pain</span></>}
+          sub="The charm you remember, rebuilt around the things that used to hold you back."
+        />
 
-        {/* Desktop / tablet: orbital portal */}
         <div ref={parallax} className="relative hidden md:block will-change-transform">
-          <div className="portal-stage" style={{ ["--portal-color" as string]: current.color }}>
-            {/* Energy arcs */}
+          <div
+            className="portal-stage"
+            style={{ ["--portal-color" as string]: current.color }}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <div className="portal-backdrop-orb" aria-hidden="true" />
+            <div className="portal-glow" aria-hidden="true" />
             <div className="portal-arc" aria-hidden="true" />
-            {/* Rings */}
             <div className="portal-ring portal-ring-outer" aria-hidden="true" />
             <div className="portal-ring portal-ring-mid" aria-hidden="true" />
             <div className="portal-ring portal-ring-inner" aria-hidden="true" />
-            {/* Glow */}
-            <div className="portal-glow" aria-hidden="true" />
-            {/* Core with info */}
-            <div className="portal-core grid place-items-center text-center p-4">
+
+            <div className="portal-core grid place-items-center text-center">
               <div key={active} className="portal-info animate-in fade-in zoom-in-95 duration-500">
-                <p className="font-display text-gold text-lg font-bold sm:text-xl leading-tight">{current.title}</p>
-                <p className="mt-2 text-sm text-muted-foreground max-w-[10rem] mx-auto">{current.body}</p>
+                <p className="font-display text-gold text-xl font-bold leading-tight lg:text-2xl">{current.title}</p>
+                <p className="mx-auto mt-3 max-w-[13.5rem] text-sm leading-relaxed text-foreground/75">{current.body}</p>
               </div>
             </div>
-            {/* Orbiting sigils */}
+
             <div className={`orbit-track ${hovered !== null ? "orbit-track-paused" : ""}`}>
               {WHY.map((w, i) => {
-                const angle = (i / WHY.length) * 360;
-                const rad = (angle * Math.PI) / 180;
-                const x = Math.cos(rad) * radius;
-                const y = Math.sin(rad) * radius;
+                const angle = (i / WHY.length) * Math.PI * 2 - Math.PI / 2;
+                const left = 50 + Math.cos(angle) * orbitRadius;
+                const top = 50 + Math.sin(angle) * orbitRadius;
                 return (
                   <button
                     key={w.title}
@@ -301,12 +305,12 @@ function WhyPortal() {
                     className="sigil"
                     data-active={i === active}
                     style={{
-                      transform: `translate(${x}%, ${y}%)`,
+                      left: `${left}%`,
+                      top: `${top}%`,
                       ["--portal-color" as string]: w.color,
                     }}
                     onMouseEnter={() => setHovered(i)}
                     onFocus={() => setHovered(i)}
-                    onMouseLeave={() => setHovered(null)}
                     onBlur={() => setHovered(null)}
                     aria-label={w.title}
                   >
@@ -318,28 +322,32 @@ function WhyPortal() {
               })}
             </div>
           </div>
-          <p className="mt-6 text-center text-xs text-muted-foreground">Hover a sigil to reveal its power</p>
+
+          <div className="portal-legend mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-center text-xs text-foreground/55">
+            <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
+            Hover a rune — the portal reacts
+            <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
+          </div>
         </div>
 
-        {/* Mobile: swipeable rune selector */}
         <div className="md:hidden">
-          {/* Mini portal visual */}
-          <div className="portal-stage mx-auto mb-6" style={{ maxWidth: 240, ["--portal-color" as string]: current.color }}>
+          <div
+            className="portal-stage portal-stage-mobile mx-auto mb-7"
+            style={{ ["--portal-color" as string]: current.color }}
+          >
+            <div className="portal-backdrop-orb" aria-hidden="true" />
+            <div className="portal-glow" aria-hidden="true" />
             <div className="portal-arc" aria-hidden="true" />
             <div className="portal-ring portal-ring-outer" aria-hidden="true" />
             <div className="portal-ring portal-ring-mid" aria-hidden="true" />
-            <div className="portal-glow" aria-hidden="true" />
-            <div className="portal-core grid place-items-center text-center p-3">
+            <div className="portal-core grid place-items-center text-center">
               <div key={active} className="portal-info animate-in fade-in zoom-in-95 duration-400">
                 <p className="font-display text-gold text-sm font-bold leading-tight">{current.title}</p>
               </div>
             </div>
           </div>
-          <div
-            className="rune-selector"
-            role="tablist"
-            aria-label="Feature sigils"
-          >
+
+          <div className="rune-selector" role="tablist" aria-label="Feature sigils">
             {WHY.map((w, i) => (
               <button
                 key={w.title}
@@ -347,11 +355,11 @@ function WhyPortal() {
                 role="tab"
                 aria-selected={i === mobileIdx}
                 onClick={() => setMobileIdx(i)}
-                className={`rune-selector-item glass rounded-2xl p-5 text-center transition-all ${i === mobileIdx ? "border-primary shadow-gold" : "opacity-70"}`}
+                className={`rune-selector-item glass rounded-2xl p-5 text-center transition-all ${i === mobileIdx ? "border-primary shadow-gold opacity-100" : "opacity-65"}`}
               >
                 <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-gold text-xl text-primary-foreground" aria-hidden="true">{w.icon}</div>
                 <h3 className="text-sm font-bold">{w.title}</h3>
-                <p className="mt-1.5 text-xs text-muted-foreground">{w.body}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{w.body}</p>
               </button>
             ))}
           </div>
