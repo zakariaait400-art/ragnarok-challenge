@@ -371,37 +371,71 @@ function WhyPortal() {
 }
 
 const FORMS = [
-  { id: "werewolf", name: "Werewolf", tag: "Feral · Up close", copy: "Shift into the Werewolf and take the fight face to face. A primal form for players who like to lead the charge.", img: 2, tint: "from-primary/40", aura: "radial-gradient(circle at 50% 50%, oklch(0.8 0.14 78 / 35%), transparent 70%)" },
-  { id: "wereraptor", name: "Wereraptor", tag: "Swift · Relentless", copy: "Become the Wereraptor and move with speed and instinct. A form built for players who never stand still.", img: 3, tint: "from-chart-4/40", aura: "radial-gradient(circle at 50% 50%, oklch(0.7 0.1 160 / 35%), transparent 70%)" },
-  { id: "arcanist", name: "Human Arcanist", tag: "Arcane · Measured", copy: "Stay human and channel nature's magic as an Arcanist. A form for players who prefer to command the field.", img: 4, tint: "from-accent/40", aura: "radial-gradient(circle at 50% 50%, oklch(0.72 0.13 235 / 35%), transparent 70%)" },
+  { id: "werewolf", name: "Werewolf", img: 2, accent: "oklch(0.82 0.14 78 / 42%)" },
+  { id: "wereraptor", name: "Wereraptor", img: 3, accent: "oklch(0.7 0.1 160 / 42%)" },
+  { id: "arcanist", name: "Human Arcanist", img: 4, accent: "oklch(0.72 0.13 235 / 42%)" },
 ];
 
 function Druid() {
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const imgWrap = useMouseParallax<HTMLDivElement>(12);
+  const stage = useMouseParallax<HTMLDivElement>(8);
   const f = FORMS[active] ?? FORMS[0]!;
+
   const onKey = (e: React.KeyboardEvent) => {
-    const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    const d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
     if (!d) return;
     e.preventDefault();
     const n = (active + d + FORMS.length) % FORMS.length;
     setActive(n);
     refs.current[n]?.focus();
   };
+
   return (
-    <section id="druid" aria-labelledby="druid-title" className="relative overflow-hidden px-4 py-24 sm:px-6">
-      <div className="rune-ring pointer-events-none absolute -left-60 top-10 h-[40rem] w-[40rem] opacity-60" aria-hidden="true" />
-      <div
-        className="form-aura pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 blur-3xl"
-        style={{ background: f.aura, opacity: 0.8 }}
-        aria-hidden="true"
-      />
+    <section
+      id="druid"
+      aria-labelledby="druid-title"
+      className="druid-section relative isolate overflow-hidden px-4 py-28 sm:px-6"
+      style={{ ["--druid-accent" as string]: f.accent }}
+    >
+      <div className="druid-bg absolute inset-0 -z-30" aria-hidden="true">
+        {FORMS.map((x, i) => (
+          <img
+            key={x.id}
+            src={ss(x.img)}
+            alt=""
+            width={1920}
+            height={1080}
+            loading="lazy"
+            decoding="async"
+            className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ${i === active ? "scale-105 opacity-35" : "scale-110 opacity-0"}`}
+          />
+        ))}
+      </div>
+      <div className="druid-vignette absolute inset-0 -z-20" aria-hidden="true" />
+      <div className="druid-word pointer-events-none absolute inset-x-0 top-10 -z-10 text-center" aria-hidden="true">DRUID</div>
+      <div className="druid-rune pointer-events-none absolute right-[-12rem] top-1/2 -z-10 h-[42rem] w-[42rem] -translate-y-1/2" aria-hidden="true" />
+      <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-30" aria-hidden="true" />
+
       <div className="mx-auto max-w-7xl">
-        <SectionTitle id="druid-title" eyebrow="New class debut" title={<>The <span className="text-gold">Druid</span>. One class, three forms.</>} sub="Switch between Werewolf, Wereraptor and Human Arcanist — three playstyles in a single class." />
-        <div className="grid items-center gap-10 lg:grid-cols-2">
-          <div>
-            <div role="tablist" aria-label="Druid forms" className="glass inline-flex w-full flex-wrap gap-1 rounded-2xl p-1.5 sm:w-auto sm:flex-nowrap sm:rounded-full" onKeyDown={onKey}>
+        <div className="mb-10 max-w-2xl">
+          <Eyebrow>New class debut</Eyebrow>
+          <h2 id="druid-title" className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+            One class. <span className="text-gold">Three forms.</span>
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">
+            The all-new Druid makes its debut with three playstyles. Switch at any time between Werewolf, Wereraptor and Human Arcanist.
+          </p>
+        </div>
+
+        <div className="grid items-center gap-10 lg:grid-cols-[0.82fr_1.18fr]">
+          <div className="order-2 lg:order-1">
+            <div
+              role="tablist"
+              aria-label="Druid forms"
+              className="druid-tabs"
+              onKeyDown={onKey}
+            >
               {FORMS.map((x, i) => (
                 <button
                   key={x.id}
@@ -412,31 +446,60 @@ function Druid() {
                   aria-controls={`panel-${x.id}`}
                   tabIndex={i === active ? 0 : -1}
                   onClick={() => setActive(i)}
-                  className={`flex-1 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${i === active ? "bg-gold text-primary-foreground shadow-gold" : "text-muted-foreground hover:text-foreground"}`}
+                  className="druid-tab"
+                  data-active={i === active}
                 >
-                  {x.name}
+                  <span className="druid-tab-num" aria-hidden="true">0{i + 1}</span>
+                  <span className="druid-tab-name">{x.name}</span>
+                  <span className="druid-tab-line" aria-hidden="true" />
                 </button>
               ))}
             </div>
-            <div role="tabpanel" id={`panel-${f.id}`} aria-labelledby={`tab-${f.id}`} key={f.id} className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-accent">{f.tag}</p>
+
+            <div
+              role="tabpanel"
+              id={`panel-${f.id}`}
+              aria-labelledby={`tab-${f.id}`}
+              key={f.id}
+              className="druid-copy mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-accent">Selected form</p>
               <h3 className="mt-2 text-3xl font-bold sm:text-4xl">{f.name}</h3>
-              <p className="mt-4 max-w-lg text-lg text-muted-foreground">{f.copy}</p>
-              <p className="mt-6 text-sm text-muted-foreground">Exact skills and numbers are revealed in-game — try every form yourself.</p>
-              <div className="mt-8"><SteamCta label="Play the Druid free" /></div>
+              <p className="mt-4 max-w-md leading-relaxed text-foreground/70">
+                One of the Druid's three official forms in Ragnarok: The New World. Switch between all three forms at any time.
+              </p>
+              <div className="mt-7"><SteamCta label="Play the Druid free" /></div>
             </div>
           </div>
-          <div ref={imgWrap} className="relative will-change-transform">
-            <div className={`absolute -inset-6 rounded-[2rem] bg-gradient-to-br ${f.tint} to-transparent blur-2xl transition-colors duration-700`} aria-hidden="true" />
-            <div className="relative aspect-video overflow-hidden rounded-2xl border border-border shadow-card">
+
+          <div ref={stage} className="order-1 relative lg:order-2 will-change-transform">
+            <div className="druid-stage-glow absolute -inset-12 -z-10" aria-hidden="true" />
+            <div className="druid-stage">
+              <div className="druid-stage-rim" aria-hidden="true" />
               {FORMS.map((x, i) => (
-                <img key={x.id} src={ss(x.img)} alt={i === active ? `Official Ragnarok: The New World screenshot — ${x.name} section` : ""} width={1920} height={1080} loading="lazy" decoding="async"
-                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-700 ${i === active ? "scale-100 opacity-100" : "scale-105 opacity-0"}`} />
+                <img
+                  key={x.id}
+                  src={ss(x.img)}
+                  alt={i === active ? "Official Ragnarok: The New World screenshot used for the Druid feature section" : ""}
+                  width={1920}
+                  height={1080}
+                  loading="lazy"
+                  decoding="async"
+                  className={`druid-stage-image ${i === active ? "is-active" : ""}`}
+                />
               ))}
-              <span className="glass absolute bottom-3 left-3 rounded-full px-3 py-1 text-xs font-semibold">Form: {f.name}</span>
+              <div className="druid-stage-shade" aria-hidden="true" />
+              <div className="druid-stage-label">
+                <span className="druid-stage-dot" aria-hidden="true" />
+                {f.name}
+              </div>
             </div>
           </div>
         </div>
+
+        <p className="mt-10 text-center text-xs text-foreground/45">
+          Official feature names and form names sourced from the Steam listing.
+        </p>
       </div>
     </section>
   );
