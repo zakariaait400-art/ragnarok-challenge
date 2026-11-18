@@ -317,134 +317,187 @@ details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
   to { transform: rotate(-360deg); }
 }
 @keyframes portal-breathe {
-  0%,100% { transform: scale(1); opacity: .8; }
-  50% { transform: scale(1.04); opacity: 1; }
+  0%,100% { transform: scale(1); opacity: .88; }
+  50% { transform: scale(1.035); opacity: 1; }
 }
 @keyframes portal-pulse-glow {
-  0%,100% { opacity: .35; }
-  50% { opacity: .65; }
+  0%,100% { opacity: .42; transform: scale(.98); }
+  50% { opacity: .78; transform: scale(1.04); }
 }
 @keyframes arc-flicker {
-  0%,100% { opacity: .2; }
-  25% { opacity: .5; }
-  50% { opacity: .15; }
-  75% { opacity: .45; }
+  0%,100% { opacity: .28; }
+  25% { opacity: .62; }
+  50% { opacity: .22; }
+  75% { opacity: .52; }
 }
 
-/* Portal core */
+.why-section { min-height: 760px; }
+.why-bg {
+  opacity: .38;
+  filter: saturate(.9) contrast(1.08);
+  transform: scale(1.04);
+}
+.why-bg-vignette {
+  background:
+    radial-gradient(circle at 50% 57%, oklch(0.18 0.05 280 / 30%) 0%, oklch(0.14 0.04 278 / 72%) 58%, oklch(0.11 0.03 275 / 96%) 100%),
+    linear-gradient(180deg, oklch(0.14 0.04 278 / 88%) 0%, transparent 25%, transparent 72%, oklch(0.14 0.04 278 / 94%) 100%);
+}
+
 .portal-stage {
   position: relative;
-  width: 100%;
+  width: min(74vw, 560px);
   aspect-ratio: 1;
-  max-width: 460px;
-  margin: 0 auto;
+  margin: .5rem auto 0;
+  isolation: isolate;
 }
-.portal-core {
-  position: absolute; inset: 32%;
+.portal-stage-mobile { width: min(78vw, 270px); }
+
+.portal-backdrop-orb {
+  position: absolute;
+  inset: 2%;
+  z-index: -2;
   border-radius: 9999px;
-  background: radial-gradient(circle at 50% 50%, oklch(0.22 0.06 280 / 92%), oklch(0.16 0.04 278 / 85%) 60%, transparent);
-  box-shadow: inset 0 0 40px oklch(0.8 0.14 78 / 25%), 0 0 60px oklch(0.8 0.14 78 / 15%);
+  background: radial-gradient(circle, oklch(0.24 0.07 282 / 62%) 0%, oklch(0.18 0.05 278 / 24%) 48%, transparent 72%);
+  box-shadow: 0 0 100px 24px oklch(0.08 0.03 280 / 55%);
+}
+
+.portal-core {
+  position: absolute;
+  inset: 29%;
+  z-index: 5;
+  border-radius: 9999px;
+  padding: 1.2rem;
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in oklab, var(--portal-color) 18%, transparent), transparent 46%),
+    radial-gradient(circle at 50% 50%, oklch(0.22 0.06 280 / 96%), oklch(0.145 0.035 278 / 95%) 70%);
+  border: 1px solid oklch(0.8 0.14 78 / 20%);
+  box-shadow:
+    inset 0 0 42px oklch(0.8 0.14 78 / 18%),
+    0 0 55px color-mix(in oklab, var(--portal-color) 30%, transparent);
   animation: portal-breathe 5s ease-in-out infinite;
 }
 .portal-glow {
-  position: absolute; inset: 10%;
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
   border-radius: 9999px;
-  background: radial-gradient(circle, var(--portal-color, oklch(0.8 0.14 78 / 30%)), transparent 65%);
-  filter: blur(30px);
+  background: radial-gradient(circle, var(--portal-color, oklch(0.8 0.14 78 / 35%)), transparent 64%);
+  filter: blur(34px);
   animation: portal-pulse-glow 5s ease-in-out infinite;
-  transition: background .6s ease;
+  transition: background .45s ease;
 }
+
 .portal-ring {
   position: absolute;
   border-radius: 9999px;
-  border: 1px solid oklch(0.8 0.14 78 / 25%);
+  pointer-events: none;
 }
 .portal-ring-outer {
-  inset: 6%;
-  border-style: dashed;
-  border-color: oklch(0.8 0.14 78 / 20%);
-  animation: portal-orbit 80s linear infinite;
+  inset: 3%;
+  border: 1px dashed oklch(0.82 0.13 78 / 30%);
+  box-shadow: 0 0 24px oklch(0.8 0.14 78 / 8%);
+  animation: portal-orbit 70s linear infinite;
 }
 .portal-ring-mid {
-  inset: 14%;
-  border-color: oklch(0.72 0.13 235 / 22%);
-  animation: portal-orbit-rev 60s linear infinite;
+  inset: 11%;
+  border: 1px solid oklch(0.72 0.13 235 / 30%);
+  animation: portal-orbit-rev 48s linear infinite;
 }
 .portal-ring-inner {
-  inset: 22%;
-  border-style: dotted;
-  border-color: oklch(0.8 0.14 78 / 18%);
-  animation: portal-orbit 40s linear infinite;
+  inset: 20%;
+  border: 1px dotted oklch(0.86 0.12 86 / 28%);
+  animation: portal-orbit 34s linear infinite;
 }
 
-/* Energy arcs */
 .portal-arc {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
   border-radius: 9999px;
   pointer-events: none;
 }
-.portal-arc::before, .portal-arc::after {
-  content: ""; position: absolute; inset: 18%;
+.portal-arc::before,
+.portal-arc::after {
+  content: "";
+  position: absolute;
+  inset: 16%;
   border-radius: 9999px;
   border: 2px solid transparent;
-  border-top-color: oklch(0.85 0.12 80 / 50%);
-  border-right-color: oklch(0.85 0.12 80 / 30%);
+  border-top-color: oklch(0.88 0.12 82 / 68%);
+  border-right-color: oklch(0.88 0.12 82 / 34%);
+  filter: drop-shadow(0 0 8px oklch(0.85 0.12 80 / 38%));
   animation: portal-orbit 8s linear infinite;
 }
 .portal-arc::after {
-  inset: 12%;
-  border-top-color: oklch(0.72 0.13 235 / 40%);
-  border-left-color: oklch(0.72 0.13 235 / 25%);
+  inset: 9%;
+  border-top-color: oklch(0.72 0.13 235 / 55%);
+  border-left-color: oklch(0.72 0.13 235 / 34%);
   animation: portal-orbit-rev 11s linear infinite, arc-flicker 3s ease-in-out infinite;
 }
 
-/* Sigils orbiting */
 .orbit-track {
-  position: absolute; inset: 0;
-  animation: portal-orbit 50s linear infinite;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  animation: portal-orbit 42s linear infinite;
+  transform-origin: 50% 50%;
 }
 .orbit-track-paused { animation-play-state: paused; }
+.orbit-track-paused .sigil-counter { animation-play-state: paused; }
+
 .sigil {
   position: absolute;
-  top: 50%; left: 50%;
-  width: 64px; height: 64px;
-  margin: -32px 0 0 -32px;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%) scale(1);
   border-radius: 9999px;
-  display: grid; place-items: center;
-  font-size: 1.5rem;
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid oklch(0.8 0.14 78 / 30%);
-  box-shadow: 0 4px 20px oklch(0.05 0.02 280 / 60%);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 35% 30%, oklch(0.32 0.07 282 / 94%), oklch(0.17 0.04 278 / 94%) 72%);
+  backdrop-filter: blur(10px);
+  border: 1px solid oklch(0.82 0.13 80 / 38%);
+  box-shadow:
+    0 9px 28px oklch(0.05 0.02 280 / 72%),
+    inset 0 0 18px oklch(0.84 0.12 82 / 8%);
   cursor: pointer;
-  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s, border-color .35s;
+  transition:
+    transform .28s cubic-bezier(.2,.8,.2,1),
+    box-shadow .28s ease,
+    border-color .28s ease,
+    background .28s ease;
   will-change: transform;
 }
-.sigil-counter {
-  /* counter-rotate so icons stay upright */
-  animation: portal-orbit-rev 50s linear infinite;
-  display: grid; place-items: center;
-  width: 100%; height: 100%;
+.sigil:hover,
+.sigil:focus-visible,
+.sigil[data-active="true"] {
+  transform: translate(-50%, -50%) scale(1.22);
+  border-color: oklch(0.9 0.11 88 / 85%);
+  background:
+    radial-gradient(circle at 35% 30%, color-mix(in oklab, var(--portal-color) 36%, oklch(0.28 0.07 282)), oklch(0.16 0.04 278 / 96%) 72%);
+  box-shadow:
+    0 0 34px 7px var(--portal-color, oklch(0.8 0.14 78 / 48%)),
+    0 10px 28px oklch(0.05 0.02 280 / 72%);
+  outline: none;
 }
-.sigil:hover, .sigil[data-active="true"] {
-  transform: scale(1.35);
-  border-color: oklch(0.85 0.12 80 / 80%);
-  box-shadow: 0 0 30px 4px var(--portal-color, oklch(0.8 0.14 78 / 50%)), 0 4px 20px oklch(0.05 0.02 280 / 60%);
+.sigil-counter {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  animation: portal-orbit-rev 42s linear infinite;
 }
 .sigil-icon {
   background: var(--gradient-gold);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  font-size: 1.5rem;
-  animation: portal-orbit-rev 50s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 1.65rem;
+  filter: drop-shadow(0 0 8px oklch(0.82 0.13 80 / 30%));
 }
 
-/* Portal info panel */
-.portal-info {
-  transition: opacity .4s ease;
-}
-.portal-info-key { animation: portal-orbit-rev 50s linear infinite; }
+.portal-info { transition: opacity .35s ease; }
+.portal-legend { letter-spacing: .08em; }
 
-/* Mobile rune selector */
 .rune-selector {
   display: flex;
   gap: .75rem;
@@ -457,9 +510,27 @@ details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
 .rune-selector::-webkit-scrollbar { display: none; }
 .rune-selector-item {
   scroll-snap-align: center;
-  flex: 0 0 70%;
-  max-width: 240px;
+  flex: 0 0 78%;
+  max-width: 260px;
 }
+
+@media (max-width: 900px) and (min-width: 768px) {
+  .portal-stage { width: min(78vw, 500px); }
+  .sigil { width: 66px; height: 66px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbit-track,
+  .sigil-counter,
+  .portal-ring,
+  .portal-arc::before,
+  .portal-arc::after,
+  .portal-core,
+  .portal-glow {
+    animation: none !important;
+  }
+}
+
 
 /* Prevent horizontal overflow from parallax/tilt/marquee */
 html, body { overflow-x: hidden; }
