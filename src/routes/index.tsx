@@ -98,7 +98,7 @@ function Header({ t }: { t: (k: string) => string }) {
   const [activeSection, setActiveSection] = useState("");
   const [langOpen, setLangOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const { lang, setLang } = useI18nCtx();
+  const { lang, setLang } = useI18n();
 
   useEffect(() => {
     let raf = 0;
