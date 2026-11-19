@@ -1232,181 +1232,271 @@ details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
 
 /* ===== Progress friction forge ===== */
 
-.progress-section {
-  background:
-    radial-gradient(circle at 50% 30%, oklch(0.21 0.06 282 / 35%), transparent 46%),
-    oklch(0.12 0.03 276);
+/* ===== Cinematic proof panels ===== */
+@keyframes proof-reveal-up {
+  from { opacity: 0; transform: translateY(40px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.progress-grid-bg {
-  opacity: .17;
-  background-image:
-    linear-gradient(oklch(0.82 0.13 80 / 10%) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.82 0.13 80 / 10%) 1px, transparent 1px);
-  background-size: 52px 52px;
-  mask: linear-gradient(180deg, transparent, black 18%, black 82%, transparent);
+@keyframes proof-crack-flicker {
+  0%, 100% { opacity: .55; }
+  20% { opacity: .15; }
+  50% { opacity: .7; }
+  70% { opacity: .25; }
 }
-.progress-glow {
-  border-radius: 9999px;
-  background: radial-gradient(circle, oklch(0.8 0.14 78 / 10%), transparent 68%);
-  filter: blur(38px);
+@keyframes proof-gold-stabilize {
+  0%, 100% { opacity: .35; transform: scale(1); }
+  50% { opacity: .6; transform: scale(1.04); }
 }
-.progress-forge {
+@keyframes proof-resource-grow {
+  0% { width: 12%; }
+  100% { width: 78%; }
+}
+@keyframes proof-rune-orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
+.proof-grid {
   display: grid;
-  gap: .85rem;
+  gap: 1.5rem;
 }
-.progress-lane {
+@media (min-width: 768px) {
+  .proof-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+.proof-panel {
   position: relative;
-  display: grid;
-  grid-template-columns: 3.2rem minmax(0, 1fr) 4.5rem minmax(0, 1fr);
-  align-items: stretch;
-  min-height: 112px;
   overflow: hidden;
-  border: 1px solid oklch(0.82 0.13 80 / 15%);
-  border-radius: 1.15rem;
-  background: oklch(0.17 0.04 280 / 74%);
-  backdrop-filter: blur(12px);
-  transition: border-color .35s ease, transform .35s ease, box-shadow .35s ease;
+  border-radius: 1.5rem;
+  border: 1px solid oklch(0.82 0.13 80 / 12%);
+  background: oklch(0.14 0.035 278 / 90%);
+  opacity: 0;
+  transition: border-color .4s ease, box-shadow .4s ease;
+  will-change: opacity, transform;
 }
-.progress-lane:hover {
-  transform: translateY(-3px);
-  border-color: oklch(0.82 0.13 80 / 34%);
-  box-shadow: 0 16px 44px -18px oklch(0.04 0.02 280 / 80%);
+.proof-revealed {
+  animation: proof-reveal-up .7s cubic-bezier(.2,.8,.2,1) forwards;
 }
-.progress-index {
-  display: grid;
-  place-items: center;
-  border-right: 1px solid oklch(0.82 0.13 80 / 12%);
-  font-family: var(--font-display);
-  font-size: .65rem;
-  font-weight: 800;
-  letter-spacing: .14em;
-  color: oklch(0.9 0.02 85 / 34%);
+.proof-panel:hover {
+  border-color: oklch(0.82 0.13 80 / 30%);
+  box-shadow: 0 20px 60px -20px oklch(0.04 0.02 280 / 85%), 0 0 30px oklch(0.8 0.14 78 / 8%);
 }
-.progress-before,
-.progress-after {
+
+.proof-image-wrap {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 1.2rem 1.35rem;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
 }
-.progress-before {
-  color: oklch(0.76 0.03 270);
+.proof-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .6s cubic-bezier(.2,.8,.2,1), filter .4s ease;
 }
-.progress-after {
-  color: oklch(0.95 0.015 85);
-  background: linear-gradient(90deg, transparent, oklch(0.8 0.14 78 / 5%));
+.proof-panel:hover .proof-image {
+  transform: scale(1.06);
+  filter: brightness(1.08) saturate(1.12);
 }
-.progress-kicker {
-  margin-bottom: .38rem;
-  font-size: .58rem;
-  font-weight: 800;
-  letter-spacing: .22em;
-  color: oklch(0.8 0.14 78 / 48%);
-}
-.progress-before p,
-.progress-after p {
-  font-size: .96rem;
-  font-weight: 650;
-  line-height: 1.45;
-}
-.progress-before p { transition: opacity .35s ease, filter .35s ease; }
-.progress-lane:hover .progress-before p {
-  opacity: .5;
-  filter: blur(.25px);
-}
-.progress-strike {
+.proof-vignette {
   position: absolute;
-  left: 1.25rem;
-  right: 1.25rem;
-  top: 50%;
-  height: 1px;
-  transform: scaleX(.18);
-  transform-origin: left;
-  background: linear-gradient(90deg, oklch(0.65 0.2 25 / 76%), oklch(0.65 0.2 25 / 25%), transparent);
-  transition: transform .55s cubic-bezier(.2,.8,.2,1);
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 30%, oklch(0.11 0.03 276 / 70%) 85%, oklch(0.11 0.03 276 / 95%) 100%),
+    radial-gradient(circle at 50% 40%, transparent 50%, oklch(0.08 0.02 280 / 50%) 100%);
 }
-.progress-lane:hover .progress-strike { transform: scaleX(1); }
-.progress-transfer {
-  position: relative;
+.proof-glow-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 60px oklch(0.8 0.14 78 / 6%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.proof-panel:hover .proof-glow-edge { opacity: 1; }
+
+/* Panel 1 — Refining: red crack that transforms into gold seal */
+.proof-crack {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(105deg, transparent 44%, oklch(0.6 0.22 25 / 50%) 49%, oklch(0.6 0.22 25 / 20%) 51%, transparent 54%),
+    linear-gradient(75deg, transparent 60%, oklch(0.55 0.2 25 / 30%) 64%, transparent 67%);
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  animation: proof-crack-flicker 4s ease-in-out infinite;
+}
+.proof-gold-seal {
+  position: absolute;
+  right: 8%;
+  bottom: 14%;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  border: 2px solid oklch(0.85 0.12 80 / 50%);
+  background: radial-gradient(circle, oklch(0.85 0.14 78 / 22%), transparent 70%);
+  box-shadow: 0 0 30px oklch(0.8 0.14 78 / 30%), inset 0 0 20px oklch(0.85 0.12 80 / 15%);
+  animation: proof-gold-stabilize 3s ease-in-out infinite;
+}
+
+/* Panel 2 — Offline: moon particles + resource bar */
+.proof-moon-particles {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, oklch(0.85 0.08 240 / 60%), transparent),
+    radial-gradient(1.5px 1.5px at 50% 20%, oklch(0.8 0.06 220 / 45%), transparent),
+    radial-gradient(1px 1px at 75% 35%, oklch(0.85 0.08 240 / 50%), transparent),
+    radial-gradient(1.5px 1.5px at 35% 50%, oklch(0.8 0.06 220 / 35%), transparent),
+    radial-gradient(1px 1px at 85% 25%, oklch(0.85 0.08 240 / 40%), transparent);
+  background-size: 280px 280px;
+  animation: drift 35s linear infinite;
+  opacity: .7;
+  mix-blend-mode: screen;
+}
+.proof-resource-bar {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 18%;
+  height: 6px;
+  border-radius: 9999px;
+  background: oklch(0.2 0.05 278 / 80%);
+  overflow: hidden;
+  box-shadow: 0 0 12px oklch(0.04 0.02 280 / 50%);
+}
+.proof-resource-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, oklch(0.8 0.14 78 / 60%), oklch(0.88 0.12 84 / 90%));
+  box-shadow: 0 0 10px oklch(0.85 0.12 80 / 50%);
+  animation: proof-resource-grow 4s ease-in-out infinite alternate;
+}
+
+/* Panel 3 — Class Freedom: rotating rune icons */
+.proof-rune-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  height: 220px;
+  margin: -110px 0 0 -110px;
+  animation: proof-rune-orbit-spin 18s linear infinite;
+}
+.proof-rune {
+  position: absolute;
   display: grid;
   place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  font-size: 1.1rem;
+  background: oklch(0.16 0.04 280 / 85%);
+  border: 1px solid oklch(0.82 0.13 80 / 30%);
+  color: oklch(0.88 0.12 84 / 80%);
+  box-shadow: 0 0 14px oklch(0.8 0.14 78 / 15%);
+  backdrop-filter: blur(4px);
 }
-.progress-transfer-line {
+.proof-rune-1 { top: 0; left: 50%; margin-left: -20px; }
+.proof-rune-2 { right: 0; top: 50%; margin-top: -20px; }
+.proof-rune-3 { bottom: 0; left: 50%; margin-left: -20px; }
+.proof-rune-4 { left: 0; top: 50%; margin-top: -20px; }
+
+/* Panel 4 — Cross-platform: floating device frames */
+.proof-devices {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+.proof-device {
+  border-radius: .6rem;
+  border: 2px solid oklch(0.82 0.13 80 / 25%);
+  box-shadow: 0 8px 30px oklch(0.04 0.02 280 / 60%), 0 0 16px oklch(0.8 0.14 78 / 8%);
+  overflow: hidden;
+  background: oklch(0.1 0.02 280);
+}
+.proof-device-screen {
+  overflow: hidden;
+  background: oklch(0.08 0.02 280);
+}
+.proof-device-pc {
+  width: 46%;
+  max-width: 220px;
+}
+.proof-device-pc .proof-device-screen { aspect-ratio: 16 / 10; border-radius: .3rem .3rem 0 0; }
+.proof-device-base {
+  width: 60%;
+  height: 8px;
+  margin: 0 auto;
+  background: oklch(0.2 0.04 278);
+  border-radius: 0 0 .3rem .3rem;
+}
+.proof-device-tablet {
+  width: 22%;
+  max-width: 100px;
+}
+.proof-device-tablet .proof-device-screen { aspect-ratio: 3 / 4; border-radius: .3rem; }
+.proof-device-phone {
+  width: 14%;
+  max-width: 60px;
+}
+.proof-device-phone .proof-device-screen { aspect-ratio: 9 / 16; border-radius: .3rem; }
+
+/* Proof panel text overlay */
+.proof-text {
   position: absolute;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, oklch(0.82 0.13 80 / 35%), transparent);
-}
-.progress-transfer-core {
-  position: relative;
+  bottom: 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+  text-align: left;
   z-index: 2;
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  border-radius: 9999px;
-  border: 1px solid oklch(0.82 0.13 80 / 28%);
-  background: oklch(0.16 0.04 278);
-  color: var(--primary);
-  transition: transform .35s ease, box-shadow .35s ease;
 }
-.progress-lane:hover .progress-transfer-core {
-  transform: translateX(.25rem) scale(1.08);
-  box-shadow: 0 0 22px oklch(0.8 0.14 78 / 25%);
+.proof-headline {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: oklch(0.96 0.015 85);
+  text-shadow: 0 2px 16px oklch(0.04 0.02 280 / 80%);
 }
-.progress-after-glow {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  background: linear-gradient(105deg, transparent 20%, oklch(0.8 0.14 78 / 9%) 48%, transparent 75%);
-  transform: translateX(-80%);
-  transition: opacity .35s ease;
-}
-.progress-lane:hover .progress-after-glow {
-  opacity: 1;
-  animation: progress-sweep .85s ease forwards;
-}
-@keyframes progress-sweep {
-  to { transform: translateX(85%); }
+.proof-sub {
+  margin-top: .3rem;
+  font-size: .92rem;
+  font-weight: 600;
+  color: oklch(0.85 0.12 80 / 80%);
+  text-shadow: 0 2px 12px oklch(0.04 0.02 280 / 80%);
 }
 
 @media (max-width: 767px) {
-  .classes-section { min-height: auto; }
-  .classes-vignette {
-    background: linear-gradient(180deg, oklch(0.11 0.03 276 / 94%), oklch(0.11 0.03 276 / 64%) 45%, oklch(0.11 0.03 276 / 94%));
-  }
-  .classes-orbit { width: min(92vw, 420px); }
-  .class-node { width: 48px; height: 48px; }
-  .class-node-druid { width: 66px; height: 66px; }
-  .progress-lane {
-    grid-template-columns: 2.6rem 1fr;
-    min-height: 0;
-  }
-  .progress-index { grid-row: 1 / span 3; }
-  .progress-before,
-  .progress-after { padding: 1rem 1.1rem; }
-  .progress-transfer {
-    min-height: 2.2rem;
-    justify-content: start;
-    padding-left: 1.1rem;
-  }
-  .progress-transfer-line { left: 1.1rem; right: 1.1rem; }
+  .proof-panel { border-radius: 1rem; }
+  .proof-image-wrap { aspect-ratio: 16 / 11; }
+  .proof-headline { font-size: 1.1rem; }
+  .proof-sub { font-size: .82rem; }
+  .proof-rune-orbit { width: 160px; height: 160px; margin: -80px 0 0 -80px; }
+  .proof-rune { width: 32px; height: 32px; font-size: .9rem; }
+  .proof-device-pc { width: 52%; }
+  .proof-device-tablet { width: 26%; }
+  .proof-device-phone { width: 16%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .classes-orbit-halo,
-  .classes-orbit-ring,
-  .classes-orbit-sweep,
-  .classes-core,
-  .class-node-pos,
-  .classes-sparkles,
-  .classes-energy-line,
-  .progress-after-glow {
+  .proof-panel,
+  .proof-image,
+  .proof-crack,
+  .proof-gold-seal,
+  .proof-moon-particles,
+  .proof-resource-fill,
+  .proof-rune-orbit,
+  .proof-device {
     animation: none !important;
+    transition: none !important;
   }
+  .proof-panel { opacity: 1; }
 }
 
 /* Prevent horizontal overflow from parallax/tilt/marquee */

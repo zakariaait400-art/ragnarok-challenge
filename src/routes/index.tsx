@@ -710,45 +710,98 @@ function Classes({ t }: { t: (k: string) => string }) {
   );
 }
 
-const FRICTION_KEYS = ["progress.p0", "progress.p1", "progress.p2", "progress.p3"] as const;
-const ANSWER_KEYS = ["progress.a0", "progress.a1", "progress.a2", "progress.a3"] as const;
+const PROOF_PANELS = [
+  { img: 7, cls: "proof-refine", lines: ["progress.p1l1", "progress.p1l2"] },
+  { img: 1, cls: "proof-offline", lines: ["progress.p2l1"] },
+  { img: 4, cls: "proof-class", lines: ["progress.p3l1", "progress.p3l2"] },
+  { img: 6, cls: "proof-cross", lines: ["progress.p4l1"] },
+] as const;
+
+function ProofPanel({ panel, index, t }: { panel: typeof PROOF_PANELS[number]; index: number; t: (k: string) => string }) {
+  const reveal = useReveal<HTMLDivElement>(0.15);
+  const parallax = useMouseParallax<HTMLDivElement>(index % 2 === 0 ? 10 : 7);
+  return (
+    <div
+      ref={reveal.ref}
+      className={`proof-panel ${panel.cls} ${reveal.visible ? "proof-revealed" : ""}`}
+      style={{ animationDelay: `${index * 0.12}s` }}
+    >
+      <div ref={parallax} className="proof-image-wrap will-change-transform">
+        <img
+          src={ss(panel.img)}
+          alt=""
+          width={1920}
+          height={1080}
+          loading="lazy"
+          decoding="async"
+          className="proof-image"
+          aria-hidden="true"
+        />
+        <div className="proof-vignette" aria-hidden="true" />
+        <div className="proof-glow-edge" aria-hidden="true" />
+        {/* Panel-specific effects */}
+        {panel.cls === "proof-refine" && (
+          <>
+            <div className="proof-crack" aria-hidden="true" />
+            <div className="proof-gold-seal" aria-hidden="true" />
+          </>
+        )}
+        {panel.cls === "proof-offline" && (
+          <>
+            <div className="proof-moon-particles" aria-hidden="true" />
+            <div className="proof-resource-bar" aria-hidden="true">
+              <div className="proof-resource-fill" />
+            </div>
+          </>
+        )}
+        {panel.cls === "proof-class" && (
+          <div className="proof-rune-orbit" aria-hidden="true">
+            <span className="proof-rune proof-rune-1">⚔</span>
+            <span className="proof-rune proof-rune-2">◈</span>
+            <span className="proof-rune proof-rune-3">⚹</span>
+            <span className="proof-rune proof-rune-4">☥</span>
+          </div>
+        )}
+        {panel.cls === "proof-cross" && (
+          <div className="proof-devices" aria-hidden="true">
+            <div className="proof-device proof-device-pc" style={{ animation: "float-y 6s ease-in-out infinite" }}>
+              <div className="proof-device-screen">{panel.img === 6 && <img src={ss(6, "600x338")} alt="" width={600} height={338} className="h-full w-full object-cover" />}</div>
+              <div className="proof-device-base" />
+            </div>
+            <div className="proof-device proof-device-tablet" style={{ animation: "float-y2 5s ease-in-out infinite" }}>
+              <div className="proof-device-screen"><img src={ss(6, "600x338")} alt="" width={600} height={338} className="h-full w-full object-cover" /></div>
+            </div>
+            <div className="proof-device proof-device-phone" style={{ animation: "float-y 4.5s ease-in-out infinite .8s" }}>
+              <div className="proof-device-screen"><img src={ss(6, "600x338")} alt="" width={600} height={338} className="h-full w-full object-cover" /></div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="proof-text">
+        {panel.lines.map((key) => (
+          <p key={key} className={key === panel.lines[0] ? "proof-headline" : "proof-sub"}>{t(key)}</p>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Friction({ t }: { t: (k: string) => string }) {
   return (
     <section id="progress" aria-labelledby="progress-title" className="progress-section relative isolate overflow-hidden px-4 py-28 sm:px-6">
       <div className="progress-grid-bg absolute inset-0 -z-20" aria-hidden="true" />
       <div className="progress-glow absolute left-1/2 top-1/2 -z-10 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
-
-      <div className="mx-auto max-w-6xl">
+      <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-25" aria-hidden="true" />
+      <div className="mx-auto max-w-7xl">
         <SectionTitle
           id="progress-title"
           eyebrow={t("progress.eyebrow")}
           title={<>{t("progress.title1")}<span className="text-gold">{t("progress.title2")}</span></>}
           sub={t("progress.sub")}
         />
-
-        <div className="progress-forge">
-          {FRICTION_KEYS.map((pKey, i) => (
-            <article key={pKey} className="progress-lane">
-              <div className="progress-index" aria-hidden="true">0{i + 1}</div>
-
-              <div className="progress-before">
-                <span className="progress-kicker">{t("progress.kickerBefore")}</span>
-                <p>{t(pKey)}</p>
-                <span className="progress-strike" aria-hidden="true" />
-              </div>
-
-              <div className="progress-transfer" aria-hidden="true">
-                <span className="progress-transfer-line" />
-                <span className="progress-transfer-core">→</span>
-              </div>
-
-              <div className="progress-after">
-                <span className="progress-kicker">{t("progress.kickerAfter")}</span>
-                <p>{t(ANSWER_KEYS[i]!)}</p>
-                <span className="progress-after-glow" aria-hidden="true" />
-              </div>
-            </article>
+        <div className="proof-grid">
+          {PROOF_PANELS.map((panel, i) => (
+            <ProofPanel key={panel.cls} panel={panel} index={i} t={t} />
           ))}
         </div>
       </div>
