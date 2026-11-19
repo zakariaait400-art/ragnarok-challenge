@@ -46,14 +46,14 @@ const DESC =
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 /** Primary CTA — always links to the Steam store page */
-function SteamCta({ size = "md", label = "Play Free on Steam", glow = false }: { size?: "sm" | "md" | "lg"; label?: string; glow?: boolean }) {
+function SteamCta({ size = "md", label = "Play Free on Steam", glow = false, direct = false }: { size?: "sm" | "md" | "lg"; label?: string; glow?: boolean; direct?: boolean }) {
   const pad = size === "lg" ? "px-8 py-4 text-base sm:text-lg" : size === "sm" ? "px-4 py-2 text-sm" : "px-6 py-3 text-base";
   const mag = useMagnetic<HTMLAnchorElement>(0.3);
   return (
     <a
       ref={mag}
-      href={STEAM_URL}
-      {...ext}
+      href={direct ? STEAM_URL : "#go2offer"}
+      {...(direct ? ext : {})}
       className={`magnetic bg-gold shadow-gold ${glow ? "cta-glow" : ""} inline-flex items-center justify-center gap-2 rounded-full font-bold text-primary-foreground transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${pad}`}
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M12 2a10 10 0 0 0-9.96 9.04l5.35 2.21a2.8 2.8 0 0 1 1.6-.5l2.39-3.46v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.4 2.43a2.83 2.83 0 0 1-5.6.6L2.3 14.5A10 10 0 1 0 12 2Zm-4.6 15.2-1.23-.5a2.12 2.12 0 1 0 1.15-2.85l1.27.53a1.56 1.56 0 1 1-1.2 2.82Zm9.7-7.47a2.52 2.52 0 1 0-2.52 2.52 2.52 2.52 0 0 0 2.52-2.52Zm-4.4 0a1.89 1.89 0 1 1 1.88 1.89 1.89 1.89 0 0 1-1.88-1.89Z"/></svg>
@@ -77,8 +77,8 @@ function SectionTitle({ eyebrow, title, sub, id }: { eyebrow: string; title: Rea
   );
 }
 
-const NAV_KEYS = ["nav.why", "nav.druid", "nav.progress", "nav.firstLogin", "nav.faq"] as const;
-const NAV_HREFS = ["#why", "#druid", "#progress", "#first-login", "#faq"] as const;
+const NAV_KEYS = ["nav.why", "nav.druid", "nav.refine", "nav.progress", "nav.firstLogin", "nav.faq"] as const;
+const NAV_HREFS = ["#why", "#druid", "#safe-refine", "#progress", "#first-login", "#faq"] as const;
 
 function Header({ t }: { t: (k: string) => string }) {
   const [open, setOpen] = useState(false);
@@ -137,8 +137,7 @@ function Header({ t }: { t: (k: string) => string }) {
 
   const GameCta = ({ mobile = false }: { mobile?: boolean }) => (
     <a
-      href={STEAM_URL}
-      {...ext}
+      href="#go2offer"
       className={`nav-game-cta ${mobile ? "nav-game-cta-mobile" : ""}`}
     >
       <span className="nav-cta-orbit nav-cta-orbit-a" aria-hidden="true" />
@@ -661,10 +660,6 @@ function Druid({ t }: { t: (k: string) => string }) {
             </div>
           </div>
         </div>
-
-        <p className="mt-10 text-center text-xs text-foreground/45">
-          {t("druid.note")}
-        </p>
       </div>
     </section>
   );
@@ -1152,7 +1147,7 @@ export default function App() {
         <FirstLogin t={t} />
         <Gallery t={t} />
         <AdventurerCodex t={t} />
-        <PortalFinale t={t} cta={<SteamCta size="lg" glow />} />
+        <PortalFinale t={t} cta={<SteamCta size="lg" glow direct />} />
       </main>
       <Footer t={t} />
       <div className="fixed inset-x-3 bottom-3 z-40 grid sm:hidden"><SteamCta /></div>
