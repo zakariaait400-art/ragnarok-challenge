@@ -1,0 +1,81 @@
+/* ---------- Shared video card ---------- */
+.yt-card { position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 1rem; overflow: hidden; border: 1px solid oklch(0.8 0.14 78 / 35%); background: #0b0a1f; color: #fff; text-align: left; cursor: pointer; box-shadow: 0 0 0 1px oklch(0.72 0.18 250 / 20%), 0 25px 60px -20px oklch(0.6 0.25 300 / 60%); transition: box-shadow 0.5s ease; }
+.yt-card:hover { box-shadow: 0 0 0 1px oklch(0.85 0.14 200 / 60%), 0 0 60px -6px oklch(0.72 0.18 250 / 70%); }
+.yt-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+.yt-thumb-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(1.15) brightness(0.85); transition: transform 1s ease, filter 0.6s ease; }
+.yt-card:hover .yt-thumb-img { transform: scale(1.06); filter: saturate(1.3) brightness(1); }
+.yt-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(10, 6, 30, 0.85)), linear-gradient(to top, rgba(10, 6, 30, 0.95), transparent 55%); }
+.yt-sweep { position: absolute; top: -20%; bottom: -20%; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, oklch(0.85 0.14 200 / 35%), transparent); transform: skewX(-20deg); animation: yt-sweep 4.5s ease-in-out infinite; }
+@keyframes yt-sweep { 0% { left: -60%; } 60%, 100% { left: 120%; } }
+.yt-play { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; display: grid; place-items: center; animation: yt-breathe 2.4s ease-in-out infinite; }
+.yt-play-ring { position: absolute; inset: -14px; border-radius: 9999px; border: 2px solid oklch(0.85 0.14 200 / 80%); box-shadow: 0 0 24px oklch(0.72 0.18 250 / 80%), inset 0 0 18px oklch(0.6 0.25 300 / 60%); animation: yt-spin 6s linear infinite; }
+.yt-play-ring::after { content: ""; position: absolute; inset: -10px; border-radius: 9999px; border: 1px dashed oklch(0.8 0.14 78 / 70%); }
+.yt-play-core { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 9999px; background: radial-gradient(circle at 30% 30%, oklch(0.95 0.1 90), oklch(0.72 0.18 250) 70%, oklch(0.6 0.25 300)); color: #fff; font-size: 1.6rem; padding-left: 4px; box-shadow: 0 0 30px oklch(0.8 0.14 78 / 70%); }
+@keyframes yt-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes yt-spin { to { transform: rotate(360deg); } }
+.yt-watch-label { position: absolute; top: 0.75rem; left: 0.75rem; font-size: 0.65rem; letter-spacing: 0.3em; font-weight: 800; padding: 0.3rem 0.6rem; border-radius: 9999px; background: oklch(0.8 0.14 78); color: oklch(0.18 0.04 278); }
+.yt-card-meta { position: absolute; left: 0; right: 0; bottom: 0; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.yt-card-meta em { font-style: normal; font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: oklch(0.85 0.14 200); }
+.yt-card-meta strong { font-family: var(--font-display); font-size: 1.05rem; line-height: 1.25; }
+.yt-card-compact .yt-play { width: 56px; height: 56px; margin: -28px 0 0 -28px; }
+.yt-card-compact .yt-play-core { font-size: 1.1rem; }
+.yt-card-compact .yt-card-meta { padding: 0.7rem 0.8rem; }
+.yt-card-compact .yt-card-meta strong { font-size: 0.85rem; }
+.yt-card-compact .yt-watch-label { top: 0.5rem; left: 0.5rem; font-size: 0.55rem; }
+
+/* ---------- Lightbox ---------- */
+.yt-lightbox { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1rem; background: rgba(6, 4, 20, 0.82); backdrop-filter: blur(14px); animation: yt-fade 0.35s ease-out both; }
+.yt-lightbox-frame { position: relative; isolation: isolate; width: min(92vw, 1100px); animation: yt-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+.yt-lightbox-frame::before { content: ""; position: absolute; inset: -6px; border-radius: 1.25rem; background: conic-gradient(from 0deg, oklch(0.72 0.18 250), oklch(0.6 0.25 300), oklch(0.8 0.14 78), oklch(0.85 0.14 200), oklch(0.72 0.18 250)); filter: blur(14px); opacity: 0.75; animation: yt-spin 8s linear infinite; z-index: -1; }
+.yt-lightbox-player { position: relative; aspect-ratio: 16 / 9; border-radius: 1rem; overflow: hidden; background: #000; border: 1px solid oklch(0.8 0.14 78 / 50%); }
+.yt-lightbox-player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-lightbox-close { position: absolute; top: -14px; right: -14px; z-index: 2; width: 44px; height: 44px; border-radius: 9999px; border: 0; background: oklch(0.8 0.14 78); color: oklch(0.18 0.04 278); font-weight: 800; cursor: pointer; box-shadow: 0 0 24px oklch(0.8 0.14 78 / 70%); }
+.yt-lightbox-title { margin-top: 0.9rem; text-align: center; font-family: var(--font-display); color: #fff; font-size: 1rem; }
+@keyframes yt-fade { from { opacity: 0; } }
+@keyframes yt-pop { from { opacity: 0; transform: translateY(24px) scale(0.92) rotateX(12deg); } }
+
+/* ---------- Watch Midgard in Motion ---------- */
+.watch-section { background: radial-gradient(ellipse at 50% 0%, oklch(0.3 0.12 290 / 60%), transparent 60%), linear-gradient(180deg, oklch(0.16 0.04 278), oklch(0.12 0.05 265)); }
+.watch-bg { background: radial-gradient(circle at 20% 80%, oklch(0.72 0.18 250 / 22%), transparent 40%), radial-gradient(circle at 80% 20%, oklch(0.6 0.25 300 / 25%), transparent 45%); }
+.watch-particles span { position: absolute; bottom: -10px; border-radius: 9999px; background: oklch(0.88 0.12 88); box-shadow: 0 0 10px oklch(0.85 0.14 200); opacity: 0; animation: watch-rise linear infinite; }
+@keyframes watch-rise { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translateY(-110vh); opacity: 0; } }
+.watch-title { text-shadow: 0 0 30px oklch(0.72 0.18 250 / 50%); }
+.watch-stage { position: relative; height: clamp(300px, 42vw, 470px); perspective: 1400px; transform-style: preserve-3d; overflow: hidden; }
+.watch-rune-ring { position: absolute; left: 50%; top: 50%; width: min(90vw, 820px); aspect-ratio: 1; translate: -50% -50%; border-radius: 9999px; border: 1px dashed oklch(0.8 0.14 78 / 35%); box-shadow: inset 0 0 60px oklch(0.6 0.25 300 / 30%); pointer-events: none; animation: watch-ring-spin 40s linear infinite; }
+@keyframes watch-ring-spin { from { transform: perspective(600px) rotateX(72deg) rotate(0deg); } to { transform: perspective(600px) rotateX(72deg) rotate(360deg); } }
+.watch-slot { position: absolute; left: 50%; top: 50%; width: min(52%, 640px); transform-style: preserve-3d; will-change: transform; transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1s ease, filter 1s ease; }
+.watch-slot::before { content: ""; position: absolute; inset: -24px; border-radius: 2rem; background: conic-gradient(from 0deg, oklch(0.72 0.18 250), oklch(0.6 0.25 300), oklch(0.8 0.14 78), oklch(0.85 0.14 200), oklch(0.72 0.18 250)); filter: blur(22px); opacity: 0; z-index: -1; transition: opacity 1s ease; animation: yt-spin 10s linear infinite; }
+.watch-slot-0 { transform: translate(-50%, -50%) translateZ(0) scale(1); z-index: 3; opacity: 1; }
+.watch-slot-0::before { opacity: 0.6; }
+.watch-slot-1 { transform: translate(-8%, -50%) translateZ(-220px) rotateY(-16deg) scale(0.82); z-index: 2; opacity: 0.7; filter: saturate(0.8); }
+.watch-slot-2 { transform: translate(-92%, -50%) translateZ(-220px) rotateY(16deg) scale(0.82); z-index: 1; opacity: 0.7; filter: saturate(0.8); }
+.watch-card-float { width: 100%; transform: rotateX(calc(var(--py, 0) * -7deg)) rotateY(calc(var(--px, 0) * 9deg)); transition: transform 0.5s ease-out; animation: watch-float 7s ease-in-out infinite; }
+.watch-slot-1 .watch-card-float,.watch-slot-2 .watch-card-float { animation-duration: 9s; }
+@keyframes watch-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+.watch-slot.is-hovered { z-index: 6; opacity: 1; filter: none; }
+.watch-slot.is-hovered .watch-card-float { transform: translateZ(90px) rotateX(calc(var(--py, 0) * -7deg)) rotateY(calc(var(--px, 0) * 9deg)) scale(1.04); }
+.watch-slot-1.is-hovered,.watch-slot-2.is-hovered { transform: translate(-50%, -50%) translateZ(120px) scale(0.92); }
+.watch-slot-1.is-hovered .watch-card-float,.watch-slot-2.is-hovered .watch-card-float { transform: rotateX(calc(var(--py, 0) * -7deg)) rotateY(calc(var(--px, 0) * 9deg)); }
+.watch-dot { width: 12px; height: 12px; border-radius: 9999px; border: 1px solid oklch(0.8 0.14 78 / 60%); background: transparent; cursor: pointer; transition: all 0.3s ease; }
+.watch-dot.is-active { background: oklch(0.8 0.14 78); box-shadow: 0 0 14px oklch(0.8 0.14 78); transform: scale(1.25); }
+@media (max-width: 640px) { .watch-slot { width: 74%; } .watch-slot-1 { transform: translate(-16%, -50%) translateZ(-200px) rotateY(-12deg) scale(0.8); } .watch-slot-2 { transform: translate(-84%, -50%) translateZ(-200px) rotateY(12deg) scale(0.8); } }
+
+/* ---------- Druid floating gameplay window ---------- */
+.druid-window { position: relative; isolation: isolate; margin: 1.5rem auto 0; width: min(80%, 300px); transform-style: preserve-3d; }
+@media (min-width: 1024px) { .druid-window { position: absolute; left: -2.5rem; bottom: -3rem; margin: 0; width: min(44%, 300px); z-index: 20; } }
+.druid-window-inner { border-radius: 1rem; transform: rotateX(calc(var(--py, 0) * -10deg)) rotateY(calc(var(--px, 0) * 12deg)); transition: transform 0.4s ease-out; animation: druid-float 6s ease-in-out infinite; }
+@keyframes druid-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+.druid-window-glow { position: absolute; inset: -18px; border-radius: 1.5rem; background: conic-gradient(from 0deg, oklch(0.72 0.18 250), oklch(0.6 0.25 300), oklch(0.8 0.14 78), oklch(0.72 0.18 250)); filter: blur(18px); opacity: 0.7; z-index: -1; animation: yt-spin 9s linear infinite; }
+.druid-window-tag { position: absolute; top: -0.6rem; right: 0.8rem; z-index: 2; font-size: 0.6rem; letter-spacing: 0.25em; font-weight: 800; padding: 0.3rem 0.6rem; border-radius: 9999px; background: linear-gradient(90deg, oklch(0.72 0.18 250), oklch(0.6 0.25 300)); color: #fff; }
+
+/* ---------- Cross-platform monitor ---------- */
+.monitor-wrap { position: relative; isolation: isolate; width: 100%; aspect-ratio: 16 / 9; border-radius: 1rem; transform: rotateX(calc(var(--py, 0) * -6deg)) rotateY(calc(var(--px, 0) * -8deg)); transition: transform 0.5s ease-out; animation: monitor-float 7s ease-in-out infinite; }
+@keyframes monitor-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+.monitor-energy { position: absolute; inset: -14px; border-radius: 1.5rem; background: conic-gradient(from 0deg, oklch(0.72 0.18 250), oklch(0.85 0.14 200), oklch(0.6 0.25 300), oklch(0.8 0.14 78), oklch(0.72 0.18 250)); filter: blur(18px); opacity: 0.55; z-index: -1; animation: yt-spin 7s linear infinite; }
+.monitor-screen { position: absolute; inset: 0; border-radius: 1rem; overflow: hidden; box-shadow: inset 0 0 0 2px oklch(0.85 0.14 200 / 40%); }
+.monitor-screen > .yt-card { height: 100%; aspect-ratio: auto; border: 0; border-radius: 1rem; box-shadow: none; }
+.monitor-scan { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px); }
+@media (prefers-reduced-motion: reduce) {
+  .yt-sweep,.yt-play,.yt-play-ring,.yt-lightbox,.yt-lightbox-frame,.yt-lightbox-frame::before,.watch-card-float,.watch-particles span,.watch-rune-ring,.watch-slot::before,.druid-window-inner,.druid-window-glow,.monitor-wrap,.monitor-energy { animation: none !important; }
+  .watch-slot,.watch-card-float,.druid-window-inner,.monitor-wrap,.yt-thumb-img { transition: none !important; }
+}
