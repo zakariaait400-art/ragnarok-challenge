@@ -57,24 +57,20 @@ export const Route = createFileRoute("/")({
 
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 
-/** Primary CTA — now smooth-scrolls to #offer instead of going to Steam */
-function OfferCta({ size = "md", label, glow = false }: { size?: "sm" | "md" | "lg"; label: string; glow?: boolean }) {
+/** Primary CTA — always links to the Steam store page */
+function SteamCta({ size = "md", label = "Play Free on Steam", glow = false }: { size?: "sm" | "md" | "lg"; label?: string; glow?: boolean }) {
   const pad = size === "lg" ? "px-8 py-4 text-base sm:text-lg" : size === "sm" ? "px-4 py-2 text-sm" : "px-6 py-3 text-base";
   const mag = useMagnetic<HTMLAnchorElement>(0.3);
-  const onClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const el = document.getElementById("offer");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
   return (
     <a
       ref={mag}
-      href="#offer"
-      onClick={onClick}
+      href={STEAM_URL}
+      {...ext}
       className={`magnetic bg-gold shadow-gold ${glow ? "cta-glow" : ""} inline-flex items-center justify-center gap-2 rounded-full font-bold text-primary-foreground transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${pad}`}
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M12 2a10 10 0 0 0-9.96 9.04l5.35 2.21a2.8 2.8 0 0 1 1.6-.5l2.39-3.46v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.4 2.43a2.83 2.83 0 0 1-5.6.6L2.3 14.5A10 10 0 1 0 12 2Zm-4.6 15.2-1.23-.5a2.12 2.12 0 1 0 1.15-2.85l1.27.53a1.56 1.56 0 1 1-1.2 2.82Zm9.7-7.47a2.52 2.52 0 1 0-2.52 2.52 2.52 2.52 0 0 0 2.52-2.52Zm-4.4 0a1.89 1.89 0 1 1 1.88 1.89 1.89 1.89 0 0 1-1.88-1.89Z"/></svg>
       {label}
+      <span className="sr-only">(opens Steam in a new tab)</span>
     </a>
   );
 }
@@ -196,7 +192,7 @@ function Header({ t }: { t: (k: string) => string }) {
               </ul>
             )}
           </div>
-          <div className="hidden sm:block"><OfferCta size="sm" label={t("cta.offerSm")} /></div>
+          <div className="hidden sm:block"><SteamCta size="sm" /></div>
           <button
             type="button"
             className="rounded-md p-2 lg:hidden"
@@ -218,7 +214,7 @@ function Header({ t }: { t: (k: string) => string }) {
               <li key={key}><a href={NAV_HREFS[i]} onClick={() => setOpen(false)} className="block py-3 text-lg font-medium">{t(key)}</a></li>
             ))}
           </ul>
-          <OfferCta label={t("cta.offer")} />
+          <SteamCta />
         </nav>
       )}
     </header>
@@ -306,7 +302,7 @@ function Hero({ t }: { t: (k: string) => string }) {
             {t("hero.body")}
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <OfferCta size="lg" glow label={t("cta.startJourney")} />
+            <SteamCta size="lg" glow />
             <a href="#first-login" className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-6 py-4 font-semibold transition-colors hover:border-primary hover:text-primary">
               {t("cta.howFirstLogin")} <span aria-hidden="true">→</span>
             </a>
@@ -564,7 +560,7 @@ function Druid({ t }: { t: (k: string) => string }) {
               <p className="mt-4 max-w-md leading-relaxed text-foreground/70">
                 {t("druid.formDesc")}
               </p>
-              <div className="mt-7"><OfferCta label={t("cta.playDruid")} /></div>
+              <div className="mt-7"><SteamCta label="Play Free on Steam" /></div>
             </div>
           </div>
 
@@ -636,7 +632,7 @@ function Classes({ t }: { t: (k: string) => string }) {
             ))}
           </div>
 
-          <div className="mt-9"><OfferCta label={t("cta.choosePath")} /></div>
+          <div className="mt-9"><SteamCta label="Play Free on Steam" /></div>
         </div>
 
         <div ref={parallax} className="classes-orbit-wrap will-change-transform">
@@ -834,7 +830,7 @@ function FirstLogin({ t }: { t: (k: string) => string }) {
             <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">{t("fl.tag2")}</span>
             <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">{t("fl.tag3")}</span>
           </div>
-          <OfferCta size="lg" label={t("cta.startStep1")} />
+          <SteamCta size="lg" />
         </div>
       </div>
     </section>
@@ -963,7 +959,7 @@ function FinalCta({ t }: { t: (k: string) => string }) {
     return () => window.removeEventListener("scroll", on);
   }, []);
   return (
-    <section id="offer" aria-labelledby="final-title" className="relative isolate overflow-hidden px-4 py-28 text-center sm:px-6 scroll-mt-20">
+    <section aria-labelledby="final-title" className="relative isolate overflow-hidden px-4 py-28 text-center sm:px-6">
       <div ref={glow} className="absolute inset-0 -z-20 scale-105 will-change-transform">
         <img src={HEADER} alt="" width={920} height={430} loading="lazy" decoding="async" className="h-full w-full object-cover opacity-30 blur-sm" />
       </div>
@@ -971,7 +967,7 @@ function FinalCta({ t }: { t: (k: string) => string }) {
       <div className="aura-pulse pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" style={{ background: "radial-gradient(circle, oklch(0.8 0.14 78 / 30%), transparent 70%)" }} aria-hidden="true" />
       <div className="particles pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
       <h2 id="final-title" className="mx-auto max-w-3xl text-4xl font-extrabold sm:text-5xl md:text-6xl">{t("final.title1")}<span className="text-gold">{t("final.title2")}</span></h2>
-      <div className="mt-10"><OfferCta size="lg" glow label={t("cta.goOffer")} /></div>
+      <div className="mt-10"><SteamCta size="lg" glow /></div>
       <p className="mt-6 text-sm text-muted-foreground">{t("final.note")}</p>
     </section>
   );
@@ -1024,7 +1020,7 @@ function Index() {
         <FinalCta t={t} />
       </main>
       <Footer t={t} />
-      <div className="fixed inset-x-3 bottom-3 z-40 grid sm:hidden"><OfferCta label={t("cta.offer")} /></div>
+      <div className="fixed inset-x-3 bottom-3 z-40 grid sm:hidden"><SteamCta /></div>
     </I18nContext.Provider>
   );
 }

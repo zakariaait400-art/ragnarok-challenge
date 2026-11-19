@@ -80,14 +80,14 @@ export function useFantasyCursor() {
       const t = e.target as HTMLElement | null;
       if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card, .class-node, .sigil, summary"))
         document.documentElement.classList.add("cursor-rune-active");
-      if (t && t.closest("a[href='#offer'], .magnetic"))
+      if (t && t.closest(".magnetic, .bg-gold"))
         document.documentElement.classList.add("cursor-rune-portal");
     };
     const out = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card, .class-node, .sigil, summary"))
         document.documentElement.classList.remove("cursor-rune-active");
-      if (t && t.closest("a[href='#offer'], .magnetic"))
+      if (t && t.closest(".magnetic, .bg-gold"))
         document.documentElement.classList.remove("cursor-rune-portal");
     };
 
