@@ -180,7 +180,7 @@ export function useReveal<T extends HTMLElement>(threshold = 0.15) {
     if (reducedMotion()) { setVisible(true); return; }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setVisible(true);
           io.disconnect();
         }
@@ -231,7 +231,7 @@ export function useMarquee(speed = 60) {
     drag.current.active = true;
     drag.current.startX = e.clientX;
     const m = trackRef.current.style.transform.match(/translateX\((-?\d+\.?\d*)px\)/);
-    drag.current.base = m ? parseFloat(m[1]) : 0;
+    drag.current.base = m?.[1] ? parseFloat(m[1]) : 0;
     if (trackRef.current) trackRef.current.style.animationPlayState = "paused";
     setPaused(true);
   }, []);
