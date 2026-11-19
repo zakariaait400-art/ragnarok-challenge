@@ -32,7 +32,7 @@ export function PortalFinale({ t, cta }: { t: (k: string) => string; cta: ReactN
   }, []);
 
   return (
-    <section ref={ref} aria-labelledby="final-title" className={`pf-wrap relative isolate flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pb-24 pt-28 text-center sm:px-6 ${entered ? "is-in" : ""}`}>
+    <section id="go2offer" ref={ref} aria-labelledby="final-title" className={`pf-wrap relative isolate flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pb-24 pt-28 text-center sm:px-6 ${entered ? "is-in" : ""}`}>
       <div className="pf-bg absolute inset-0 -z-20" aria-hidden="true">
         <img src={LIB} alt="" width={1568} height={506} loading="lazy" decoding="async" className="pf-art" />
       </div>
