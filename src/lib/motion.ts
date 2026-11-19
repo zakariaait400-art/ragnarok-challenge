@@ -8,51 +8,87 @@ const isTouch = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
-/** Custom fantasy cursor: gold/rune glow with a subtle trailing halo. Desktop only. */
+/** Custom fantasy cursor: glowing diamond rune + rotating ring + trail + sparkles. Desktop only. */
 export function useFantasyCursor() {
   useEffect(() => {
     if (reducedMotion() || isTouch()) return;
     const dot = document.createElement("div");
+    const ring = document.createElement("div");
     const trail = document.createElement("div");
+    const sparkLayer = document.createElement("div");
     dot.className = "cursor-rune-dot";
+    ring.className = "cursor-rune-ring";
     trail.className = "cursor-rune-trail";
+    sparkLayer.className = "cursor-spark-layer";
     const wrap = document.createElement("div");
     wrap.style.position = "fixed";
     wrap.style.inset = "0";
     wrap.style.pointerEvents = "none";
     wrap.style.zIndex = "9999";
-    wrap.append(dot, trail);
+    wrap.append(trail, sparkLayer, ring, dot);
     document.documentElement.classList.add("cursor-rune-enabled");
     document.body.appendChild(wrap);
 
-    let rx = 0,
-      ry = 0,
+    let mx = 0,
+      my = 0,
       dx = 0,
       dy = 0,
+      rx = 0,
+      ry = 0,
+      tx = 0,
+      ty = 0,
       raf = 0;
+    let lastSpark = 0;
+    let sparkId = 0;
+
     const move = (e: MouseEvent) => {
       dx = e.clientX;
       dy = e.clientY;
       dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+      ring.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
       if (!raf) raf = requestAnimationFrame(loop);
+      // Emit spark particles while moving
+      const now = performance.now();
+      if (now - lastSpark > 80 && (Math.abs(dx - mx) > 3 || Math.abs(dy - my) > 3)) {
+        lastSpark = now;
+        mx = dx;
+        my = dy;
+        const s = document.createElement("div");
+        s.className = "cursor-spark";
+        s.style.left = `${dx}px`;
+        s.style.top = `${dy}px`;
+        const ang = Math.random() * Math.PI * 2;
+        const dist = 8 + Math.random() * 12;
+        s.style.setProperty("--sx", `${Math.cos(ang) * dist}px`);
+        s.style.setProperty("--sy", `${Math.sin(ang) * dist}px`);
+        s.id = `spark-${sparkId++}`;
+        sparkLayer.appendChild(s);
+        window.setTimeout(() => s.remove(), 600);
+      }
     };
     const loop = () => {
-      rx += (dx - rx) * 0.18;
-      ry += (dy - ry) * 0.18;
-      trail.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-      if (Math.abs(dx - rx) > 0.5 || Math.abs(dy - ry) > 0.5) {
+      rx += (dx - rx) * 0.22;
+      ry += (dy - ry) * 0.22;
+      tx += (dx - tx) * 0.12;
+      ty += (dy - ty) * 0.12;
+      trail.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
+      if (Math.abs(dx - rx) > 0.5 || Math.abs(dy - ry) > 0.5 || Math.abs(dx - tx) > 0.5 || Math.abs(dy - ty) > 0.5) {
         raf = requestAnimationFrame(loop);
       } else raf = 0;
     };
     const over = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card"))
+      if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card, .class-node, .sigil, summary"))
         document.documentElement.classList.add("cursor-rune-active");
+      if (t && t.closest("a[href='#offer'], .magnetic"))
+        document.documentElement.classList.add("cursor-rune-portal");
     };
     const out = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card"))
+      if (t && t.closest("button, a, [role='tab'], img, .tilt-card, .marquee-card, .class-node, .sigil, summary"))
         document.documentElement.classList.remove("cursor-rune-active");
+      if (t && t.closest("a[href='#offer'], .magnetic"))
+        document.documentElement.classList.remove("cursor-rune-portal");
     };
 
     window.addEventListener("mousemove", move, { passive: true });
@@ -64,7 +100,7 @@ export function useFantasyCursor() {
       window.removeEventListener("mouseover", over);
       window.removeEventListener("mouseout", out);
       cancelAnimationFrame(raf);
-      document.documentElement.classList.remove("cursor-rune-enabled", "cursor-rune-active");
+      document.documentElement.classList.remove("cursor-rune-enabled", "cursor-rune-active", "cursor-rune-portal");
       wrap.remove();
     };
   }, []);

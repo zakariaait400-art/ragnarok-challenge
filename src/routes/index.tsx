@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   useFantasyCursor,
   useMagnetic,
@@ -8,6 +8,14 @@ import {
   useMouseParallax,
   useMarquee,
 } from "../lib/motion";
+import {
+  I18nContext,
+  LANGUAGES,
+  type Lang,
+  type I18nContextValue,
+  translate,
+  useI18n,
+} from "../lib/i18n";
 
 export const STEAM_URL = "https://store.steampowered.com/app/4212480/Ragnarok_The_New_World/";
 const STEAMDB_URL = "https://steamdb.info/app/4212480/info/";
@@ -49,19 +57,24 @@ export const Route = createFileRoute("/")({
 
 const ext = { target: "_blank", rel: "noopener noreferrer" } as const;
 
-function SteamCta({ size = "md", label = "Play Free on Steam", glow = false }: { size?: "sm" | "md" | "lg"; label?: string; glow?: boolean }) {
+/** Primary CTA — now smooth-scrolls to #offer instead of going to Steam */
+function OfferCta({ size = "md", label, glow = false }: { size?: "sm" | "md" | "lg"; label: string; glow?: boolean }) {
   const pad = size === "lg" ? "px-8 py-4 text-base sm:text-lg" : size === "sm" ? "px-4 py-2 text-sm" : "px-6 py-3 text-base";
   const mag = useMagnetic<HTMLAnchorElement>(0.3);
+  const onClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById("offer");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   return (
     <a
       ref={mag}
-      href={STEAM_URL}
-      {...ext}
+      href="#offer"
+      onClick={onClick}
       className={`magnetic bg-gold shadow-gold ${glow ? "cta-glow" : ""} inline-flex items-center justify-center gap-2 rounded-full font-bold text-primary-foreground transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${pad}`}
     >
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current"><path d="M12 2a10 10 0 0 0-9.96 9.04l5.35 2.21a2.8 2.8 0 0 1 1.6-.5l2.39-3.46v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.4 2.43a2.83 2.83 0 0 1-5.6.6L2.3 14.5A10 10 0 1 0 12 2Zm-4.6 15.2-1.23-.5a2.12 2.12 0 1 0 1.15-2.85l1.27.53a1.56 1.56 0 1 1-1.2 2.82Zm9.7-7.47a2.52 2.52 0 1 0-2.52 2.52 2.52 2.52 0 0 0 2.52-2.52Zm-4.4 0a1.89 1.89 0 1 1 1.88 1.89 1.89 1.89 0 0 1-1.88-1.89Z"/></svg>
       {label}
-      <span className="sr-only">(opens Steam in a new tab)</span>
     </a>
   );
 }
@@ -80,39 +93,110 @@ function SectionTitle({ eyebrow, title, sub, id }: { eyebrow: string; title: Rea
   );
 }
 
-const NAV = [
-  ["#why", "Why This Version"],
-  ["#druid", "Druid"],
-  ["#progress", "Progress"],
-  ["#first-login", "First Login"],
-  ["#faq", "FAQ"],
-] as const;
+const NAV_KEYS = ["nav.why", "nav.druid", "nav.progress", "nav.firstLogin", "nav.faq"] as const;
+const NAV_HREFS = ["#why", "#druid", "#progress", "#first-login", "#faq"] as const;
 
-function Header() {
+function Header({ t }: { t: (k: string) => string }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
+  const [langOpen, setLangOpen] = useState(false);
+  const { lang, setLang } = useI18nCtx();
+
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 24);
-    on();
-    window.addEventListener("scroll", on, { passive: true });
-    return () => window.removeEventListener("scroll", on);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Scroll spy for active section
+  useEffect(() => {
+    const sections = NAV_HREFS.map((h) => document.querySelector(h)).filter(Boolean) as Element[];
+    if (!sections.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActiveSection(`#${e.target.id}`);
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px" },
+    );
+    sections.forEach((s) => io.observe(s));
+    return () => io.disconnect();
+  }, []);
+
+  // Close lang dropdown on outside click
+  useEffect(() => {
+    if (!langOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".lang-selector")) setLangOpen(false);
+    };
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, [langOpen]);
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang)!;
+
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-colors ${scrolled || open ? "glass" : "border-b border-transparent"}`}>
+    <header className={`nav-premium ${scrolled || open ? "nav-scrolled" : "nav-transparent"}`}>
+      <div className="nav-border-glow" aria-hidden="true" />
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <a href="#top" className="font-display text-lg font-bold leading-none tracking-wide sm:text-xl">
-          <span className="text-gold">RAGNAROK</span>
-          <span className="block text-[0.6rem] tracking-[0.35em] text-muted-foreground">THE NEW WORLD</span>
+        <a href="#top" className="nav-logo group" aria-label="Ragnarok: The New World — home">
+          <img src="/ragnarok/logo-2x.png" alt="" width={120} height={48} className="h-9 w-auto transition-opacity group-hover:opacity-90" />
         </a>
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex gap-7 text-sm font-medium">
-            {NAV.map(([h, l]) => (
-              <li key={h}><a href={h} className="text-muted-foreground transition-colors hover:text-primary">{l}</a></li>
+            {NAV_KEYS.map((key, i) => (
+              <li key={key}>
+                <a
+                  href={NAV_HREFS[i]}
+                  className={`nav-link ${activeSection === NAV_HREFS[i] ? "nav-link-active" : ""}`}
+                >
+                  {t(key)}
+                </a>
+              </li>
             ))}
           </ul>
         </nav>
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block"><SteamCta size="sm" /></div>
+          {/* Language selector */}
+          <div className="lang-selector relative">
+            <button
+              type="button"
+              className="lang-trigger"
+              aria-expanded={langOpen}
+              aria-haspopup="listbox"
+              aria-label="Select language"
+              onClick={() => setLangOpen((o) => !o)}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+              </svg>
+              <span className="lang-trigger-code">{currentLang.native}</span>
+            </button>
+            {langOpen && (
+              <ul className="lang-dropdown" role="listbox" aria-label="Languages">
+                {LANGUAGES.map((l) => (
+                  <li key={l.code}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={l.code === lang}
+                      className={`lang-option ${l.code === lang ? "lang-option-active" : ""}`}
+                      onClick={() => { setLang(l.code); setLangOpen(false); }}
+                    >
+                      <span className="lang-option-native">{l.native}</span>
+                      <span className="lang-option-label">{l.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="hidden sm:block"><OfferCta size="sm" label={t("cta.offerSm")} /></div>
           <button
             type="button"
             className="rounded-md p-2 lg:hidden"
@@ -130,15 +214,19 @@ function Header() {
       {open && (
         <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border px-4 pb-6 lg:hidden">
           <ul className="flex flex-col py-2">
-            {NAV.map(([h, l]) => (
-              <li key={h}><a href={h} onClick={() => setOpen(false)} className="block py-3 text-lg font-medium">{l}</a></li>
+            {NAV_KEYS.map((key, i) => (
+              <li key={key}><a href={NAV_HREFS[i]} onClick={() => setOpen(false)} className="block py-3 text-lg font-medium">{t(key)}</a></li>
             ))}
           </ul>
-          <SteamCta />
+          <OfferCta label={t("cta.offer")} />
         </nav>
       )}
     </header>
   );
+}
+
+function useI18nCtx() {
+  return useI18n();
 }
 
 const HERO_POSTER = "/ragnarok/library-hero-2x.jpg";
@@ -146,7 +234,7 @@ const HERO_VIDEO_WEBM = "/ragnarok/microtrailer.webm";
 const HERO_VIDEO_MP4 = "/ragnarok/microtrailer.mp4";
 const HERO_LOGO = "/ragnarok/logo-2x.png";
 
-function Hero() {
+function Hero({ t }: { t: (k: string) => string }) {
   const bg = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const depth = useMouseParallax<HTMLDivElement>(16);
@@ -162,7 +250,6 @@ function Hero() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
-  // Pause video when offscreen for performance
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -210,22 +297,22 @@ function Hero() {
             fetchPriority="high"
             className="hero-logo mb-4 h-auto w-[min(70vw,420px)]"
           />
-          <Eyebrow>Officially licensed · Now on Steam</Eyebrow>
+          <Eyebrow>{t("hero.eyebrow")}</Eyebrow>
           <h1 id="hero-title" className="text-4xl font-extrabold leading-[1.05] sm:text-6xl lg:text-7xl">
-            <span className="reveal-line"><span style={{ animationDelay: "0.1s" }}>Rediscover Midgard.</span></span><br />
-            <span className="reveal-line"><span className="text-gold" style={{ animationDelay: "0.35s" }}>Play Different.</span></span>
+            <span className="reveal-line"><span style={{ animationDelay: "0.1s" }}>{t("hero.title1")}</span></span><br />
+            <span className="reveal-line"><span className="text-gold" style={{ animationDelay: "0.35s" }}>{t("hero.title2")}</span></span>
           </h1>
           <p className="mt-6 max-w-xl text-base text-foreground/90 sm:text-lg">
-            The cross-platform Ragnarok MMORPG. 8 classes, the all-new Druid, refining with no level loss on failure, and resources that keep building while you're away.
+            {t("hero.body")}
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <SteamCta size="lg" glow />
+            <OfferCta size="lg" glow label={t("cta.startJourney")} />
             <a href="#first-login" className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-6 py-4 font-semibold transition-colors hover:border-primary hover:text-primary">
-              See how to reach First Login <span aria-hidden="true">→</span>
+              {t("cta.howFirstLogin")} <span aria-hidden="true">→</span>
             </a>
           </div>
           <ul className="mt-8 flex flex-wrap gap-2" aria-label="Key facts">
-            {["Free-to-play", "8 classes", "Up to 120 FPS", "Cross-platform progression"].map((c) => (
+            {[t("hero.fact1"), t("hero.fact2"), t("hero.fact3"), t("hero.fact4")].map((c) => (
               <li key={c} className="glass rounded-full px-3 py-1.5 text-xs font-semibold sm:text-sm">{c}</li>
             ))}
           </ul>
@@ -235,23 +322,32 @@ function Hero() {
   );
 }
 
-const WHY = [
-  { icon: "⚒", title: "Refine with confidence", body: "A failed refine means no level loss — your gear stays intact. Reach +15 with confidence.", color: "oklch(0.8 0.14 78 / 45%)" },
-  { icon: "☾", title: "Progress while offline", body: "Idler mechanics keep accumulating resources while you're logged out.", color: "oklch(0.72 0.13 235 / 45%)" },
-  { icon: "⚔", title: "One character, many classes", body: "Master multiple classes on a single character, with free stat resets and resource retrievals.", color: "oklch(0.7 0.1 160 / 45%)" },
-  { icon: "◈", title: "Play across devices", body: "Your progress syncs across phone, tablet and PC.", color: "oklch(0.7 0.15 40 / 45%)" },
+const WHY_ICONS = ["⚒", "☾", "⚔", "◈"];
+const WHY_COLORS = [
+  "oklch(0.8 0.14 78 / 45%)",
+  "oklch(0.72 0.13 235 / 45%)",
+  "oklch(0.7 0.1 160 / 45%)",
+  "oklch(0.7 0.15 40 / 45%)",
 ];
 
-function WhyPortal() {
+function WhyPortal({ t }: { t: (k: string) => string }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [mobileIdx, setMobileIdx] = useState(0);
   const parallax = useMouseParallax<HTMLDivElement>(7);
   const active = hovered ?? mobileIdx;
-  const current = WHY[active] ?? WHY[0]!;
+  const current = active;
   const orbitRadius = 42;
 
+  const whyData = [
+    { icon: WHY_ICONS[0]!, title: t("why.f0t"), body: t("why.f0b"), color: WHY_COLORS[0]! },
+    { icon: WHY_ICONS[1]!, title: t("why.f1t"), body: t("why.f1b"), color: WHY_COLORS[1]! },
+    { icon: WHY_ICONS[2]!, title: t("why.f2t"), body: t("why.f2b"), color: WHY_COLORS[2]! },
+    { icon: WHY_ICONS[3]!, title: t("why.f3t"), body: t("why.f3b"), color: WHY_COLORS[3]! },
+  ];
+  const w = whyData[current] ?? whyData[0]!;
+
   return (
-    <section id="why" aria-labelledby="why-title" className="why-section relative isolate scroll-mt-20 overflow-hidden px-4 pb-24 pt-28 sm:px-6 sm:pt-32">
+    <section id="why" aria-labelledby="why-title" className="why-section relative isolate scroll-mt-20 overflow-hidden px-4 pb-24 pt-36 sm:px-6 sm:pt-40">
       <img
         src={ss(1)}
         alt=""
@@ -268,15 +364,15 @@ function WhyPortal() {
       <div className="mx-auto max-w-7xl">
         <SectionTitle
           id="why-title"
-          eyebrow="Why this version"
-          title={<>Classic Midgard, <span className="text-gold">less grind pain</span></>}
-          sub="The charm you remember, rebuilt around the things that used to hold you back."
+          eyebrow={t("why.eyebrow")}
+          title={<>{t("why.title1")}<span className="text-gold">{t("why.title2")}</span></>}
+          sub={t("why.sub")}
         />
 
         <div ref={parallax} className="relative hidden md:block will-change-transform">
           <div
             className="portal-stage"
-            style={{ ["--portal-color" as string]: current.color }}
+            style={{ ["--portal-color" as string]: w.color }}
             onMouseLeave={() => setHovered(null)}
           >
             <div className="portal-backdrop-orb" aria-hidden="true" />
@@ -288,34 +384,34 @@ function WhyPortal() {
 
             <div className="portal-core grid place-items-center text-center">
               <div key={active} className="portal-info animate-in fade-in zoom-in-95 duration-500">
-                <p className="font-display text-gold text-xl font-bold leading-tight lg:text-2xl">{current.title}</p>
-                <p className="mx-auto mt-3 max-w-[13.5rem] text-sm leading-relaxed text-foreground/75">{current.body}</p>
+                <p className="font-display text-gold text-xl font-bold leading-tight lg:text-2xl">{w.title}</p>
+                <p className="mx-auto mt-3 max-w-[13.5rem] text-sm leading-relaxed text-foreground/75">{w.body}</p>
               </div>
             </div>
 
             <div className={`orbit-track ${hovered !== null ? "orbit-track-paused" : ""}`}>
-              {WHY.map((w, i) => {
-                const angle = (i / WHY.length) * Math.PI * 2 - Math.PI / 2;
+              {whyData.map((item, i) => {
+                const angle = (i / whyData.length) * Math.PI * 2 - Math.PI / 2;
                 const left = 50 + Math.cos(angle) * orbitRadius;
                 const top = 50 + Math.sin(angle) * orbitRadius;
                 return (
                   <button
-                    key={w.title}
+                    key={item.title}
                     type="button"
                     className="sigil"
                     data-active={i === active}
                     style={{
                       left: `${left}%`,
                       top: `${top}%`,
-                      ["--portal-color" as string]: w.color,
+                      ["--portal-color" as string]: item.color,
                     }}
                     onMouseEnter={() => setHovered(i)}
                     onFocus={() => setHovered(i)}
                     onBlur={() => setHovered(null)}
-                    aria-label={w.title}
+                    aria-label={item.title}
                   >
                     <span className="sigil-counter">
-                      <span className="sigil-icon" aria-hidden="true">{w.icon}</span>
+                      <span className="sigil-icon" aria-hidden="true">{item.icon}</span>
                     </span>
                   </button>
                 );
@@ -325,7 +421,7 @@ function WhyPortal() {
 
           <div className="portal-legend mx-auto mt-3 flex max-w-3xl items-center justify-center gap-2 text-center text-xs text-foreground/55">
             <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
-            Hover a rune — the portal reacts
+            {t("why.hint")}
             <span className="h-px w-10 bg-primary/30" aria-hidden="true" />
           </div>
         </div>
@@ -333,7 +429,7 @@ function WhyPortal() {
         <div className="md:hidden">
           <div
             className="portal-stage portal-stage-mobile mx-auto mb-7"
-            style={{ ["--portal-color" as string]: current.color }}
+            style={{ ["--portal-color" as string]: w.color }}
           >
             <div className="portal-backdrop-orb" aria-hidden="true" />
             <div className="portal-glow" aria-hidden="true" />
@@ -342,24 +438,24 @@ function WhyPortal() {
             <div className="portal-ring portal-ring-mid" aria-hidden="true" />
             <div className="portal-core grid place-items-center text-center">
               <div key={active} className="portal-info animate-in fade-in zoom-in-95 duration-400">
-                <p className="font-display text-gold text-sm font-bold leading-tight">{current.title}</p>
+                <p className="font-display text-gold text-sm font-bold leading-tight">{w.title}</p>
               </div>
             </div>
           </div>
 
           <div className="rune-selector" role="tablist" aria-label="Feature sigils">
-            {WHY.map((w, i) => (
+            {whyData.map((item, i) => (
               <button
-                key={w.title}
+                key={item.title}
                 type="button"
                 role="tab"
                 aria-selected={i === mobileIdx}
                 onClick={() => setMobileIdx(i)}
                 className={`rune-selector-item glass rounded-2xl p-5 text-center transition-all ${i === mobileIdx ? "border-primary shadow-gold opacity-100" : "opacity-65"}`}
               >
-                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-gold text-xl text-primary-foreground" aria-hidden="true">{w.icon}</div>
-                <h3 className="text-sm font-bold">{w.title}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{w.body}</p>
+                <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-gold text-xl text-primary-foreground" aria-hidden="true">{item.icon}</div>
+                <h3 className="text-sm font-bold">{item.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{item.body}</p>
               </button>
             ))}
           </div>
@@ -376,7 +472,7 @@ const FORMS = [
   { id: "arcanist", name: "Human Arcanist", img: 4, accent: "oklch(0.72 0.13 235 / 42%)" },
 ];
 
-function Druid() {
+function Druid({ t }: { t: (k: string) => string }) {
   const [active, setActive] = useState(0);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const stage = useMouseParallax<HTMLDivElement>(8);
@@ -419,12 +515,12 @@ function Druid() {
 
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 max-w-2xl">
-          <Eyebrow>New class debut</Eyebrow>
+          <Eyebrow>{t("druid.eyebrow")}</Eyebrow>
           <h2 id="druid-title" className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
-            One class. <span className="text-gold">Three forms.</span>
+            {t("druid.title1")}<span className="text-gold">{t("druid.title2")}</span>
           </h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">
-            The all-new Druid makes its debut with three playstyles. Switch at any time between Werewolf, Wereraptor and Human Arcanist.
+            {t("druid.body")}
           </p>
         </div>
 
@@ -463,12 +559,12 @@ function Druid() {
               key={f.id}
               className="druid-copy mt-8 animate-in fade-in slide-in-from-bottom-2 duration-500"
             >
-              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-accent">Selected form</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-accent">{t("druid.selectedForm")}</p>
               <h3 className="mt-2 text-3xl font-bold sm:text-4xl">{f.name}</h3>
               <p className="mt-4 max-w-md leading-relaxed text-foreground/70">
-                One of the Druid's three official forms in Ragnarok: The New World. Switch between all three forms at any time.
+                {t("druid.formDesc")}
               </p>
-              <div className="mt-7"><SteamCta label="Play the Druid free" /></div>
+              <div className="mt-7"><OfferCta label={t("cta.playDruid")} /></div>
             </div>
           </div>
 
@@ -498,14 +594,14 @@ function Druid() {
         </div>
 
         <p className="mt-10 text-center text-xs text-foreground/45">
-          Official feature names and form names sourced from the Steam listing.
+          {t("druid.note")}
         </p>
       </div>
     </section>
   );
 }
 
-function Classes() {
+function Classes({ t }: { t: (k: string) => string }) {
   const parallax = useMouseParallax<HTMLDivElement>(10);
   const [hovered, setHovered] = useState<number | null>(null);
   const labels = ["Knight", "Wizard", "Druid", "Archer", "Assassin", "Priest", "Blacksmith", "Merchant"];
@@ -526,21 +622,21 @@ function Classes() {
 
       <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <Eyebrow>Play your way</Eyebrow>
+          <Eyebrow>{t("classes.eyebrow")}</Eyebrow>
           <h2 id="classes-title" className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
-            Eight paths. <span className="text-gold">One character.</span>
+            {t("classes.title1")}<span className="text-gold">{t("classes.title2")}</span>
           </h2>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">
-            Choose from 8 classes — the Druid debuts among them. One character can master different classes, and free stat resets mean an early choice never locks you in.
+            {t("classes.body")}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-2.5">
-            {["8 classes", "Druid debuts", "Change classes", "Free stat resets", "100+ looks"].map((t) => (
-              <span key={t} className="classes-chip">{t}</span>
+            {[t("classes.chip1"), t("classes.chip2"), t("classes.chip3"), t("classes.chip4"), t("classes.chip5")].map((label) => (
+              <span key={label} className="classes-chip">{label}</span>
             ))}
           </div>
 
-          <div className="mt-9"><SteamCta label="Choose your path on Steam" /></div>
+          <div className="mt-9"><OfferCta label={t("cta.choosePath")} /></div>
         </div>
 
         <div ref={parallax} className="classes-orbit-wrap will-change-transform">
@@ -552,7 +648,6 @@ function Classes() {
             <div className="classes-orbit-sweep" aria-hidden="true" />
             <div className="classes-sparkles" aria-hidden="true" />
 
-            {/* Energy lines from center to each node */}
             <svg className="classes-energy-lines" viewBox="0 0 100 100" aria-hidden="true">
               {Array.from({ length: 8 }).map((_, i) => {
                 const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
@@ -611,7 +706,7 @@ function Classes() {
             })}
           </div>
           <p className="mt-5 text-center text-xs uppercase tracking-[0.24em] text-foreground/45">
-            Druid debuts among eight classes
+            {t("classes.note")}
           </p>
         </div>
       </div>
@@ -619,14 +714,10 @@ function Classes() {
   );
 }
 
-const FRICTION = [
-  ["Fear of failed refines", "No level loss on failure — gear stays intact"],
-  ["No time to grind every day", "Offline / idler resource accumulation"],
-  ["Picked the wrong class?", "Class changes and free stat resets"],
-  ["Stuck to one device", "Progress sync across phone, tablet and PC"],
-];
+const FRICTION_KEYS = ["progress.p0", "progress.p1", "progress.p2", "progress.p3"] as const;
+const ANSWER_KEYS = ["progress.a0", "progress.a1", "progress.a2", "progress.a3"] as const;
 
-function Friction() {
+function Friction({ t }: { t: (k: string) => string }) {
   return (
     <section id="progress" aria-labelledby="progress-title" className="progress-section relative isolate overflow-hidden px-4 py-28 sm:px-6">
       <div className="progress-grid-bg absolute inset-0 -z-20" aria-hidden="true" />
@@ -635,19 +726,19 @@ function Friction() {
       <div className="mx-auto max-w-6xl">
         <SectionTitle
           id="progress-title"
-          eyebrow="Grind less, play more"
-          title={<>Old frustrations. <span className="text-gold">New answers.</span></>}
-          sub="Hover each path to see the old pain give way to the official feature that answers it."
+          eyebrow={t("progress.eyebrow")}
+          title={<>{t("progress.title1")}<span className="text-gold">{t("progress.title2")}</span></>}
+          sub={t("progress.sub")}
         />
 
         <div className="progress-forge">
-          {FRICTION.map(([pain, answer], i) => (
-            <article key={pain} className="progress-lane">
+          {FRICTION_KEYS.map((pKey, i) => (
+            <article key={pKey} className="progress-lane">
               <div className="progress-index" aria-hidden="true">0{i + 1}</div>
 
               <div className="progress-before">
-                <span className="progress-kicker">OLD FRICTION</span>
-                <p>{pain}</p>
+                <span className="progress-kicker">{t("progress.kickerBefore")}</span>
+                <p>{t(pKey)}</p>
                 <span className="progress-strike" aria-hidden="true" />
               </div>
 
@@ -657,8 +748,8 @@ function Friction() {
               </div>
 
               <div className="progress-after">
-                <span className="progress-kicker">OFFICIAL ANSWER</span>
-                <p>{answer}</p>
+                <span className="progress-kicker">{t("progress.kickerAfter")}</span>
+                <p>{t(ANSWER_KEYS[i]!)}</p>
                 <span className="progress-after-glow" aria-hidden="true" />
               </div>
             </article>
@@ -669,7 +760,7 @@ function Friction() {
   );
 }
 
-function Platform() {
+function Platform({ t }: { t: (k: string) => string }) {
   const tilt = useTilt<HTMLDivElement>(5);
   return (
     <section aria-labelledby="pc-title" className="px-4 py-24 sm:px-6">
@@ -683,20 +774,20 @@ function Platform() {
           </div>
         </div>
         <div>
-          <Eyebrow>Cross-platform · PC</Eyebrow>
-          <h2 id="pc-title" className="text-3xl font-bold sm:text-4xl">Phone on the go. <span className="text-gold">PC at home.</span></h2>
-          <p className="mt-4 text-muted-foreground sm:text-lg">Your progress syncs across phone, tablet and PC. On PC, the game supports up to 120 FPS — actual performance depends on your hardware.</p>
+          <Eyebrow>{t("pc.eyebrow")}</Eyebrow>
+          <h2 id="pc-title" className="text-3xl font-bold sm:text-4xl">{t("pc.title1")}<span className="text-gold">{t("pc.title2")}</span></h2>
+          <p className="mt-4 text-muted-foreground sm:text-lg">{t("pc.body")}</p>
           <details className="glass group mt-8 rounded-2xl p-5">
             <summary className="flex cursor-pointer list-none items-center justify-between font-semibold">
-              PC requirements (Windows)
-              <span aria-hidden="true" className="text-primary transition-transform group-open:rotate-45">+</span>
+              {t("pc.requirements")}
+              <span aria-hidden="true" className="text-2xl text-primary transition-transform group-open:rotate-45">+</span>
             </summary>
             <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
               {[["Memory (min)", "12 GB RAM"], ["Memory (rec.)", "16 GB RAM"], ["Storage", "30 GB available"], ["Network", "Broadband internet"]].map(([k, v]) => (
                 <div key={k}><dt className="text-muted-foreground">{k}</dt><dd className="font-semibold">{v}</dd></div>
               ))}
             </dl>
-            <p className="mt-4 text-xs text-muted-foreground">Full specs on the <a className="underline hover:text-primary" href={STEAM_URL} {...ext}>official Steam page</a>.</p>
+            <p className="mt-4 text-xs text-muted-foreground">{t("pc.fullSpecs")} <a className="underline hover:text-primary" href={STEAM_URL} {...ext}>{t("pc.steamPage")}</a>.</p>
           </details>
         </div>
       </div>
@@ -704,19 +795,15 @@ function Platform() {
   );
 }
 
-const STEPS = [
-  { t: "Open the Steam page", d: "Go to the official Ragnarok: The New World store page." },
-  { t: "Download & install", d: "Add it free to your library and install it on Windows." },
-  { t: "Gravity account", d: "Create or sign in with a Gravity account through the game launcher." },
-  { t: "Log in to the game", d: "Enter Midgard for the first time. That's your First Login." },
-];
+const STEP_KEYS = ["fl.s0t", "fl.s1t", "fl.s2t", "fl.s3t"] as const;
+const STEP_DESC_KEYS = ["fl.s0d", "fl.s1d", "fl.s2d", "fl.s3d"] as const;
 
-function FirstLogin() {
+function FirstLogin({ t }: { t: (k: string) => string }) {
   const { ref, visible } = useReveal<HTMLDivElement>(0.2);
   return (
     <section id="first-login" aria-labelledby="fl-title" className="px-4 py-24 sm:px-6">
       <div ref={ref} className="mx-auto max-w-7xl">
-        <SectionTitle id="fl-title" eyebrow="Your route to Midgard" title={<>Four steps to your <span className="text-gold">First Login</span></>} sub="Clicking isn't the finish line. The adventure begins the moment you log in." />
+        <SectionTitle id="fl-title" eyebrow={t("fl.eyebrow")} title={<>{t("fl.title1")}<span className="text-gold">{t("fl.title2")}</span></>} sub={t("fl.sub")} />
         <ol className="relative grid gap-5 md:grid-cols-4">
           <div aria-hidden="true" className="absolute left-[12.5%] right-[12.5%] top-8 hidden h-[3px] md:block">
             <div className="h-full w-full overflow-hidden rounded-full bg-border">
@@ -725,36 +812,36 @@ function FirstLogin() {
               />
             </div>
           </div>
-          {STEPS.map((s, i) => {
-            const last = i === STEPS.length - 1;
+          {STEP_KEYS.map((sKey, i) => {
+            const last = i === STEP_KEYS.length - 1;
             return (
               <li
-                key={s.t}
+                key={sKey}
                 className={`step-item relative rounded-2xl p-6 text-center ${last ? "bg-gold text-primary-foreground shadow-gold" : "glass"}`}
                 style={{ animationDelay: `${0.25 + i * 0.18}s` }}
               >
                 <span className={`font-display relative mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full text-2xl font-extrabold ${last ? "bg-background text-primary" : "bg-gold text-primary-foreground"}`}>{i + 1}</span>
-                <h3 className="text-lg font-bold">{s.t}</h3>
-                <p className={`mt-2 text-sm ${last ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{s.d}</p>
-                {last && <p className="font-display mt-4 text-sm font-extrabold tracking-[0.2em]">★ FIRST LOGIN</p>}
+                <h3 className="text-lg font-bold">{t(sKey)}</h3>
+                <p className={`mt-2 text-sm ${last ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{t(STEP_DESC_KEYS[i]!)}</p>
+                {last && <p className="font-display mt-4 text-sm font-extrabold tracking-[0.2em]">{t("fl.badge")}</p>}
               </li>
             );
           })}
         </ol>
         <div className="mt-10 flex flex-col items-center gap-6">
           <div className="flex flex-wrap justify-center gap-3 text-sm">
-            <span className="rounded-full border border-primary px-4 py-2 font-semibold text-primary">Challenge conversion = First Login</span>
-            <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">CTA click ≠ conversion</span>
-            <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">Download / install ≠ conversion</span>
+            <span className="rounded-full border border-primary px-4 py-2 font-semibold text-primary">{t("fl.tag")}</span>
+            <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">{t("fl.tag2")}</span>
+            <span className="rounded-full border border-border px-4 py-2 text-muted-foreground">{t("fl.tag3")}</span>
           </div>
-          <SteamCta size="lg" label="Start step 1 on Steam" />
+          <OfferCta size="lg" label={t("cta.startStep1")} />
         </div>
       </div>
     </section>
   );
 }
 
-function Gallery() {
+function Gallery({ t }: { t: (k: string) => string }) {
   const dlg = useRef<HTMLDialogElement>(null);
   const [idx, setIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -764,12 +851,11 @@ function Gallery() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  // Duplicate the list once for a seamless loop
   const loop = [...SS, ...SS];
 
   return (
     <section aria-labelledby="gallery-title" className="py-24">
-      <div className="px-4 sm:px-6"><SectionTitle id="gallery-title" eyebrow="Official media" title="Glimpses of the New World" sub="Official screenshots from the Steam store page." /></div>
+      <div className="px-4 sm:px-6"><SectionTitle id="gallery-title" eyebrow={t("gallery.eyebrow")} title={t("gallery.title")} sub={t("gallery.sub")} /></div>
       <div
         ref={m.containerRef}
         className="group relative overflow-hidden"
@@ -814,7 +900,7 @@ function Gallery() {
           })}
         </div>
       </div>
-      <p className="mt-4 text-center text-xs text-muted-foreground">Hover to pause · drag to scroll</p>
+      <p className="mt-4 text-center text-xs text-muted-foreground">{t("gallery.hint")}</p>
       <dialog ref={dlg} aria-label="Screenshot viewer" onKeyDown={(e) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); }}
         onClick={(e) => { if (e.target === dlg.current) dlg.current?.close(); }}
         className="m-auto w-[min(95vw,1200px)] bg-transparent p-0 text-foreground backdrop:bg-background/90">
@@ -832,29 +918,23 @@ function Gallery() {
   );
 }
 
-const FAQ = [
-  ["Is it free to play?", "Yes. Ragnarok: The New World is free-to-play on Steam, with optional in-game purchases."],
-  ["Is a Gravity account required?", "Yes. The game requires a third-party Gravity account, which you create or sign in to through the game launcher."],
-  ["What happens if refining fails?", "According to the official Steam page, a failed refine causes no level loss and your gear stays intact."],
-  ["Can I play across devices?", "Yes. The official listing describes progress sync across phone, tablet and PC."],
-  ["What are the PC requirements?", "Windows, at least 12 GB RAM (16 GB recommended), 30 GB of storage and a broadband internet connection. Check the Steam page for full specs."],
-  ["Which languages are supported?", "Currently English, Indonesian, Thai and Simplified Chinese, as listed on Steam."],
-];
+const FAQ_Q_KEYS = ["faq.q0", "faq.q1", "faq.q2", "faq.q3", "faq.q4", "faq.q5"] as const;
+const FAQ_A_KEYS = ["faq.a0", "faq.a1", "faq.a2", "faq.a3", "faq.a4", "faq.a5"] as const;
 
-function Faq() {
+function Faq({ t }: { t: (k: string) => string }) {
   return (
     <section id="faq" aria-labelledby="faq-title" className="px-4 py-24 sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <SectionTitle id="faq-title" eyebrow="FAQ" title="Before you enter Midgard" />
+        <SectionTitle id="faq-title" eyebrow={t("faq.eyebrow")} title={t("faq.title")} />
         <div className="space-y-3">
-          {FAQ.map(([q, a]) => (
-            <details key={q} className="faq-item glass group rounded-2xl px-5 py-4">
+          {FAQ_Q_KEYS.map((qKey, i) => (
+            <details key={qKey} className="faq-item glass group rounded-2xl px-5 py-4">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold">
-                {q}<span aria-hidden="true" className="text-2xl text-primary transition-transform group-open:rotate-45">+</span>
+                {t(qKey)}<span aria-hidden="true" className="text-2xl text-primary transition-transform group-open:rotate-45">+</span>
               </summary>
               <div className="faq-answer">
                 <div>
-                  <p className="pt-3 text-muted-foreground">{a}</p>
+                  <p className="pt-3 text-muted-foreground">{t(FAQ_A_KEYS[i]!)}</p>
                 </div>
               </div>
             </details>
@@ -865,7 +945,7 @@ function Faq() {
   );
 }
 
-function FinalCta() {
+function FinalCta({ t }: { t: (k: string) => string }) {
   const glow = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -883,28 +963,28 @@ function FinalCta() {
     return () => window.removeEventListener("scroll", on);
   }, []);
   return (
-    <section aria-labelledby="final-title" className="relative isolate overflow-hidden px-4 py-28 text-center sm:px-6">
+    <section id="offer" aria-labelledby="final-title" className="relative isolate overflow-hidden px-4 py-28 text-center sm:px-6 scroll-mt-20">
       <div ref={glow} className="absolute inset-0 -z-20 scale-105 will-change-transform">
         <img src={HEADER} alt="" width={920} height={430} loading="lazy" decoding="async" className="h-full w-full object-cover opacity-30 blur-sm" />
       </div>
       <div className="bg-hero-overlay absolute inset-0 -z-10 rotate-180" />
       <div className="aura-pulse pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" style={{ background: "radial-gradient(circle, oklch(0.8 0.14 78 / 30%), transparent 70%)" }} aria-hidden="true" />
       <div className="particles pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
-      <h2 id="final-title" className="mx-auto max-w-3xl text-4xl font-extrabold sm:text-5xl md:text-6xl">Your next adventure starts in <span className="text-gold">Midgard.</span></h2>
-      <div className="mt-10"><SteamCta size="lg" /></div>
-      <p className="mt-6 text-sm text-muted-foreground">Free-to-play · In-game purchases · Gravity account required</p>
+      <h2 id="final-title" className="mx-auto max-w-3xl text-4xl font-extrabold sm:text-5xl md:text-6xl">{t("final.title1")}<span className="text-gold">{t("final.title2")}</span></h2>
+      <div className="mt-10"><OfferCta size="lg" glow label={t("cta.goOffer")} /></div>
+      <p className="mt-6 text-sm text-muted-foreground">{t("final.note")}</p>
     </section>
   );
 }
 
-function Footer() {
+function Footer({ t }: { t: (k: string) => string }) {
   return (
     <footer className="border-t border-border px-4 py-10 sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-        <p className="max-w-xl">Independent student project created for an educational challenge. Not an official Gravity or Valve website. Game names, images and trademarks belong to their respective owners.</p>
+        <p className="max-w-xl">{t("footer.disclaimer")}</p>
         <ul className="flex gap-6">
-          <li><a href={STEAM_URL} {...ext} className="hover:text-primary">Official Steam page</a></li>
-          <li><a href={STEAMDB_URL} {...ext} className="hover:text-primary">SteamDB source</a></li>
+          <li><a href={STEAM_URL} {...ext} className="hover:text-primary">{t("footer.steam")}</a></li>
+          <li><a href={STEAMDB_URL} {...ext} className="hover:text-primary">{t("footer.steamdb")}</a></li>
         </ul>
       </div>
     </footer>
@@ -913,24 +993,38 @@ function Footer() {
 
 function Index() {
   useFantasyCursor();
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof localStorage !== "undefined") {
+      const saved = localStorage.getItem("ragnarok-lang");
+      if (saved && ["en", "th", "id", "zh"].includes(saved)) return saved as Lang;
+    }
+    return "en";
+  });
+  const setLang = useCallback((l: Lang) => {
+    setLangState(l);
+    if (typeof localStorage !== "undefined") localStorage.setItem("ragnarok-lang", l);
+  }, []);
+  const t = useCallback((key: string) => translate(lang, key), [lang]);
+  const ctx: I18nContextValue = { lang, setLang, t };
+
   return (
-    <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">Skip to content</a>
-      <Header />
+    <I18nContext.Provider value={ctx}>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground">{t("skip.content")}</a>
+      <Header t={t} />
       <main id="main">
-        <Hero />
-        <WhyPortal />
-        <Druid />
-        <Classes />
-        <Friction />
-        <Platform />
-        <FirstLogin />
-        <Gallery />
-        <Faq />
-        <FinalCta />
+        <Hero t={t} />
+        <WhyPortal t={t} />
+        <Druid t={t} />
+        <Classes t={t} />
+        <Friction t={t} />
+        <Platform t={t} />
+        <FirstLogin t={t} />
+        <Gallery t={t} />
+        <Faq t={t} />
+        <FinalCta t={t} />
       </main>
-      <Footer />
-      <div className="fixed inset-x-3 bottom-3 z-40 grid sm:hidden"><SteamCta /></div>
-    </>
+      <Footer t={t} />
+      <div className="fixed inset-x-3 bottom-3 z-40 grid sm:hidden"><OfferCta label={t("cta.offer")} /></div>
+    </I18nContext.Provider>
   );
 }
