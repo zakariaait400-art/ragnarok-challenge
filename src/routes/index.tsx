@@ -334,7 +334,7 @@ function Hero({ t }: { t: (k: string) => string }) {
     const v = videoRef.current;
     if (!v) return;
     const io = new IntersectionObserver(
-      ([entry]) => { entry.isIntersecting ? v.play().catch(() => {}) : v.pause(); },
+      ([entry]) => { entry?.isIntersecting ? v.play().catch(() => {}) : v.pause(); },
       { threshold: 0.05 },
     );
     io.observe(v);
@@ -1126,16 +1126,22 @@ function Footer({ t }: { t: (k: string) => string }) {
 
 function Index() {
   useFantasyCursor();
-  const [lang, setLangState] = useState<Lang>(() => {
-    if (typeof localStorage !== "undefined") {
-      const saved = localStorage.getItem("ragnarok-lang");
-      if (saved && ["en", "th", "id", "zh"].includes(saved)) return saved as Lang;
+  const [lang, setLangState] = useState<Lang>("en");
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("ragnarok-lang");
+      if (saved === "en" || saved === "th" || saved === "id" || saved === "zh") setLangState(saved);
+    } catch {
+      // Keep English when browser storage is unavailable.
     }
-    return "en";
-  });
+  }, []);
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
-    if (typeof localStorage !== "undefined") localStorage.setItem("ragnarok-lang", l);
+    try {
+      window.localStorage.setItem("ragnarok-lang", l);
+    } catch {
+      // Language switching remains available without browser storage.
+    }
   }, []);
   const t = useCallback((key: string) => translate(lang, key), [lang]);
   const ctx: I18nContextValue = { lang, setLang, t };
