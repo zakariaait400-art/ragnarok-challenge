@@ -506,6 +506,9 @@ function Druid() {
 }
 
 function Classes() {
+  const parallax = useMouseParallax<HTMLDivElement>(10);
+  const [hovered, setHovered] = useState<number | null>(null);
+  const labels = ["Knight", "Wizard", "Druid", "Archer", "Assassin", "Priest", "Blacksmith", "Merchant"];
   return (
     <section aria-labelledby="classes-title" className="classes-section relative isolate overflow-hidden px-4 py-28 sm:px-6">
       <img
@@ -540,12 +543,31 @@ function Classes() {
           <div className="mt-9"><SteamCta label="Choose your path on Steam" /></div>
         </div>
 
-        <div className="classes-orbit-wrap">
+        <div ref={parallax} className="classes-orbit-wrap will-change-transform">
           <div className="classes-orbit" aria-label="Eight available classes visualized as eight paths">
             <div className="classes-orbit-halo" aria-hidden="true" />
             <div className="classes-orbit-ring classes-orbit-ring-a" aria-hidden="true" />
             <div className="classes-orbit-ring classes-orbit-ring-b" aria-hidden="true" />
+            <div className="classes-orbit-ring classes-orbit-ring-c" aria-hidden="true" />
             <div className="classes-orbit-sweep" aria-hidden="true" />
+            <div className="classes-sparkles" aria-hidden="true" />
+
+            {/* Energy lines from center to each node */}
+            <svg className="classes-energy-lines" viewBox="0 0 100 100" aria-hidden="true">
+              {Array.from({ length: 8 }).map((_, i) => {
+                const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+                const x = 50 + Math.cos(angle) * 42;
+                const y = 50 + Math.sin(angle) * 42;
+                const druid = i === 2;
+                return (
+                  <line
+                    key={i}
+                    className={`classes-energy-line ${druid ? "is-druid" : ""}`}
+                    x1="50" y1="50" x2={x} y2={y}
+                  />
+                );
+              })}
+            </svg>
 
             <div className="classes-core">
               <span className="classes-eight">8</span>
@@ -558,19 +580,32 @@ function Classes() {
               const left = 50 + Math.cos(angle) * radius;
               const top = 50 + Math.sin(angle) * radius;
               const druid = i === 2;
+              const label = labels[i] ?? `Class ${i + 1}`;
               return (
                 <div
                   key={i}
-                  className={`class-node ${druid ? "class-node-druid" : ""}`}
+                  className="class-node-pos"
                   style={{
                     left: `${left}%`,
                     top: `${top}%`,
+                    transform: "translate(-50%, -50%)",
                     animationDelay: `${i * 0.18}s`,
                   }}
-                  aria-hidden="true"
                 >
-                  <span>{druid ? "D" : String(i + 1).padStart(2, "0")}</span>
-                  {druid && <em>DRUID</em>}
+                  <button
+                    type="button"
+                    className={`class-node ${druid ? "class-node-druid" : ""}`}
+                    data-active={hovered === i}
+                    onMouseEnter={() => setHovered(i)}
+                    onFocus={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                    onBlur={() => setHovered(null)}
+                    aria-label={druid ? "Druid — new class debut" : `${label} class`}
+                  >
+                    <span aria-hidden="true">{druid ? "D" : String(i + 1).padStart(2, "0")}</span>
+                    {druid && <em>DRUID</em>}
+                    <span className="class-node-tooltip">{druid ? "DRUID · NEW" : label.toUpperCase()}</span>
+                  </button>
                 </div>
               );
             })}
