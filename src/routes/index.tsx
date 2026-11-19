@@ -97,32 +97,44 @@ function Header({ t }: { t: (k: string) => string }) {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [langOpen, setLangOpen] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const { lang, setLang } = useI18nCtx();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+        setScrolled(y > 20);
+        setScrollProgress(Math.min(100, Math.max(0, (y / max) * 100)));
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
-  // Scroll spy for active section
   useEffect(() => {
     const sections = NAV_HREFS.map((h) => document.querySelector(h)).filter(Boolean) as Element[];
     if (!sections.length) return;
     const io = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActiveSection(`#${e.target.id}`);
-        });
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveSection(`#${visible.target.id}`);
       },
-      { rootMargin: "-40% 0px -55% 0px" },
+      { rootMargin: "-32% 0px -58% 0px", threshold: [0.05, 0.2, 0.5] },
     );
     sections.forEach((s) => io.observe(s));
     return () => io.disconnect();
   }, []);
 
-  // Close lang dropdown on outside click
   useEffect(() => {
     if (!langOpen) return;
     const onDoc = (e: MouseEvent) => {
@@ -135,46 +147,79 @@ function Header({ t }: { t: (k: string) => string }) {
 
   const currentLang = LANGUAGES.find((l) => l.code === lang)!;
 
+  const GameCta = ({ mobile = false }: { mobile?: boolean }) => (
+    <a
+      href={STEAM_URL}
+      {...ext}
+      className={`nav-game-cta ${mobile ? "nav-game-cta-mobile" : ""}`}
+    >
+      <span className="nav-cta-orbit nav-cta-orbit-a" aria-hidden="true" />
+      <span className="nav-cta-orbit nav-cta-orbit-b" aria-hidden="true" />
+      <span className="nav-cta-shine" aria-hidden="true" />
+      <span className="nav-cta-spark nav-cta-spark-a" aria-hidden="true">✦</span>
+      <span className="nav-cta-spark nav-cta-spark-b" aria-hidden="true">✧</span>
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
+        <path d="M12 2a10 10 0 0 0-9.96 9.04l5.35 2.21a2.8 2.8 0 0 1 1.6-.5l2.39-3.46v-.05a3.78 3.78 0 1 1 3.78 3.78h-.09l-3.4 2.43a2.83 2.83 0 0 1-5.6.6L2.3 14.5A10 10 0 1 0 12 2Zm-4.6 15.2-1.23-.5a2.12 2.12 0 1 0 1.15-2.85l1.27.53a1.56 1.56 0 1 1-1.2 2.82Zm9.7-7.47a2.52 2.52 0 1 0-2.52 2.52 2.52 2.52 0 0 0 2.52-2.52Zm-4.4 0a1.89 1.89 0 1 1 1.88 1.89 1.89 1.89 0 0 1-1.88-1.89Z"/>
+      </svg>
+      <span>Play Free on Steam</span>
+    </a>
+  );
+
   return (
-    <header className={`nav-premium ${scrolled || open ? "nav-scrolled" : "nav-transparent"}`}>
-      <div className="nav-border-glow" aria-hidden="true" />
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <a href="#top" className="nav-logo group" aria-label="Ragnarok: The New World — home">
-          <img src="/ragnarok/logo-2x.png" alt="" width={120} height={48} className="h-9 w-auto transition-opacity group-hover:opacity-90" />
+    <header className={`nav-mmorpg ${scrolled || open ? "nav-mmorpg-scrolled" : "nav-mmorpg-top"}`}>
+      <div className="nav-magic-bg" aria-hidden="true" />
+      <div className="nav-magic-stars" aria-hidden="true">
+        <span /><span /><span /><span /><span />
+      </div>
+      <div className="nav-crystal nav-crystal-a" aria-hidden="true" />
+      <div className="nav-crystal nav-crystal-b" aria-hidden="true" />
+      <div className="nav-scroll-track" aria-hidden="true">
+        <div className="nav-scroll-energy" style={{ width: `${scrollProgress}%` }} />
+        <span className="nav-scroll-comet" style={{ left: `${scrollProgress}%` }} />
+      </div>
+
+      <div className={`nav-shell mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 ${scrolled ? "is-compact" : ""}`}>
+        <a href="#top" className="nav-logo-game group" aria-label="Ragnarok: The New World — home">
+          <span className="nav-logo-halo" aria-hidden="true" />
+          <span className="nav-logo-ring" aria-hidden="true" />
+          <img src="/ragnarok/logo-2x.png" alt="Ragnarok: The New World" width={150} height={58} />
+          <span className="nav-logo-spark nav-logo-spark-a" aria-hidden="true">✦</span>
+          <span className="nav-logo-spark nav-logo-spark-b" aria-hidden="true">✧</span>
         </a>
+
         <nav aria-label="Main" className="hidden lg:block">
-          <ul className="flex gap-7 text-sm font-medium">
-            {NAV_KEYS.map((key, i) => (
-              <li key={key}>
-                <a
-                  href={NAV_HREFS[i]}
-                  className={`nav-link ${activeSection === NAV_HREFS[i] ? "nav-link-active" : ""}`}
-                >
-                  {t(key)}
-                </a>
-              </li>
-            ))}
+          <ul className="nav-game-menu">
+            {NAV_KEYS.map((key, i) => {
+              const active = activeSection === NAV_HREFS[i];
+              return (
+                <li key={key}>
+                  <a href={NAV_HREFS[i]} className={`nav-game-link ${active ? "is-active" : ""}`}>
+                    <span className="nav-link-rune" aria-hidden="true">◆</span>
+                    <span>{t(key)}</span>
+                    <span className="nav-link-energy" aria-hidden="true" />
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         </nav>
-        <div className="flex items-center gap-2">
-          {/* Language selector */}
-          <div className="lang-selector relative">
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="lang-selector relative hidden sm:block">
             <button
               type="button"
-              className="lang-trigger"
+              className="lang-trigger lang-trigger-game"
               aria-expanded={langOpen}
               aria-haspopup="listbox"
               aria-label="Select language"
               onClick={() => setLangOpen((o) => !o)}
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-              </svg>
+              <span className="lang-rune" aria-hidden="true">◈</span>
               <span className="lang-trigger-code">{currentLang.native}</span>
+              <span className={`lang-chevron ${langOpen ? "is-open" : ""}`} aria-hidden="true">⌄</span>
             </button>
             {langOpen && (
-              <ul className="lang-dropdown" role="listbox" aria-label="Languages">
+              <ul className="lang-dropdown lang-dropdown-game" role="listbox" aria-label="Languages">
                 {LANGUAGES.map((l) => (
                   <li key={l.code}>
                     <button
@@ -192,37 +237,76 @@ function Header({ t }: { t: (k: string) => string }) {
               </ul>
             )}
           </div>
-          <div className="hidden sm:block"><SteamCta size="sm" /></div>
+
+          <div className="hidden md:block"><GameCta /></div>
+
           <button
             type="button"
-            className="rounded-md p-2 lg:hidden"
+            className={`nav-burger lg:hidden ${open ? "is-open" : ""}`}
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
             onClick={() => setOpen((o) => !o)}
           >
-            <svg viewBox="0 0 24 24" className="h-6 w-6 stroke-current" fill="none" strokeWidth="2" aria-hidden="true">
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
+            <span /><span /><span />
           </button>
         </div>
       </div>
+
       {open && (
-        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border px-4 pb-6 lg:hidden">
-          <ul className="flex flex-col py-2">
+        <nav id="mobile-nav" aria-label="Mobile" className="nav-mobile-game lg:hidden">
+          <div className="nav-mobile-rune" aria-hidden="true" />
+          <ul>
             {NAV_KEYS.map((key, i) => (
-              <li key={key}><a href={NAV_HREFS[i]} onClick={() => setOpen(false)} className="block py-3 text-lg font-medium">{t(key)}</a></li>
+              <li key={key} style={{ animationDelay: `${i * 55}ms` }}>
+                <a
+                  href={NAV_HREFS[i]}
+                  onClick={() => setOpen(false)}
+                  className={activeSection === NAV_HREFS[i] ? "is-active" : ""}
+                >
+                  <span aria-hidden="true">◆</span>
+                  {t(key)}
+                </a>
+              </li>
             ))}
           </ul>
-          <SteamCta />
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <div className="lang-selector relative">
+              <button
+                type="button"
+                className="lang-trigger lang-trigger-game"
+                aria-expanded={langOpen}
+                onClick={() => setLangOpen((o) => !o)}
+              >
+                <span className="lang-rune" aria-hidden="true">◈</span>
+                <span>{currentLang.native}</span>
+                <span className={`lang-chevron ${langOpen ? "is-open" : ""}`} aria-hidden="true">⌄</span>
+              </button>
+              {langOpen && (
+                <ul className="lang-dropdown lang-dropdown-game" role="listbox">
+                  {LANGUAGES.map((l) => (
+                    <li key={l.code}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={l.code === lang}
+                        className={`lang-option ${l.code === lang ? "lang-option-active" : ""}`}
+                        onClick={() => { setLang(l.code); setLangOpen(false); }}
+                      >
+                        <span className="lang-option-native">{l.native}</span>
+                        <span className="lang-option-label">{l.label}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <GameCta mobile />
+          </div>
         </nav>
       )}
     </header>
   );
-}
-
-function useI18nCtx() {
-  return useI18n();
 }
 
 const HERO_POSTER = "/ragnarok/library-hero-2x.jpg";
