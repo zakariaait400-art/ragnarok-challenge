@@ -724,6 +724,348 @@ details.faq-item[open] .faq-answer { grid-template-rows: 1fr; }
   .druid-stage-dot { animation: none !important; }
 }
 
+
+/* ===== Eight paths / class constellation ===== */
+
+.classes-section {
+  min-height: 780px;
+  background: oklch(0.12 0.03 276);
+}
+.classes-bg {
+  opacity: .28;
+  filter: saturate(.82) contrast(1.06);
+  transform: scale(1.05);
+}
+.classes-vignette {
+  background:
+    linear-gradient(90deg, oklch(0.11 0.03 276 / 96%) 0%, oklch(0.11 0.03 276 / 82%) 43%, oklch(0.11 0.03 276 / 44%) 72%, oklch(0.11 0.03 276 / 78%) 100%),
+    linear-gradient(180deg, oklch(0.11 0.03 276 / 92%), transparent 24%, transparent 76%, oklch(0.11 0.03 276 / 94%));
+}
+.classes-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.15rem;
+  padding: .45rem .8rem;
+  border-radius: 9999px;
+  border: 1px solid oklch(0.82 0.13 80 / 22%);
+  background: oklch(0.18 0.045 280 / 68%);
+  backdrop-filter: blur(10px);
+  font-size: .78rem;
+  font-weight: 700;
+  color: oklch(0.91 0.02 85 / 84%);
+  transition: border-color .3s ease, transform .3s ease, box-shadow .3s ease;
+}
+.classes-chip:hover {
+  transform: translateY(-2px);
+  border-color: oklch(0.82 0.13 80 / 55%);
+  box-shadow: 0 0 24px oklch(0.8 0.14 78 / 12%);
+}
+
+.classes-orbit-wrap { position: relative; }
+.classes-orbit {
+  position: relative;
+  width: min(82vw, 520px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+.classes-orbit-halo {
+  position: absolute;
+  inset: 7%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.72 0.13 235 / 10%) 0%, oklch(0.8 0.14 78 / 9%) 38%, transparent 70%);
+  filter: blur(22px);
+  animation: portal-pulse-glow 5.5s ease-in-out infinite;
+}
+.classes-orbit-ring {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.classes-orbit-ring-a {
+  inset: 5%;
+  border: 1px dashed oklch(0.82 0.13 80 / 24%);
+  animation: portal-orbit 64s linear infinite;
+}
+.classes-orbit-ring-b {
+  inset: 17%;
+  border: 1px solid oklch(0.72 0.13 235 / 20%);
+  box-shadow: inset 0 0 36px oklch(0.72 0.13 235 / 5%);
+  animation: portal-orbit-rev 52s linear infinite;
+}
+.classes-orbit-sweep {
+  position: absolute;
+  inset: 10%;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, transparent 0 82%, oklch(0.86 0.12 84 / 22%) 91%, transparent 100%);
+  mask: radial-gradient(circle, transparent 62%, black 63%, black 65%, transparent 66%);
+  animation: portal-orbit 9s linear infinite;
+}
+.classes-core {
+  position: absolute;
+  inset: 31%;
+  display: grid;
+  place-content: center;
+  place-items: center;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 50% 38%, oklch(0.3 0.08 282 / 88%), oklch(0.14 0.035 278 / 96%) 70%);
+  border: 1px solid oklch(0.84 0.12 82 / 24%);
+  box-shadow:
+    inset 0 0 42px oklch(0.8 0.14 78 / 13%),
+    0 0 58px oklch(0.72 0.13 235 / 12%);
+  animation: portal-breathe 5s ease-in-out infinite;
+}
+.classes-eight {
+  font-family: var(--font-display);
+  font-size: clamp(4.8rem, 10vw, 7.8rem);
+  font-weight: 900;
+  line-height: .8;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.classes-core-label {
+  margin-top: .8rem;
+  font-family: var(--font-display);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .34em;
+  color: oklch(0.92 0.02 85 / 70%);
+}
+
+@keyframes class-node-float {
+  0%,100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, calc(-50% - 7px)) scale(1.04); }
+}
+.class-node {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid oklch(0.82 0.13 80 / 24%);
+  background: oklch(0.17 0.045 280 / 92%);
+  box-shadow: 0 8px 24px oklch(0.04 0.02 280 / 65%);
+  font-family: var(--font-display);
+  font-size: .72rem;
+  font-weight: 800;
+  color: oklch(0.9 0.02 85 / 62%);
+  animation: class-node-float 4.6s ease-in-out infinite;
+}
+.class-node::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 1px solid oklch(0.82 0.13 80 / 8%);
+  border-radius: inherit;
+}
+.class-node-druid {
+  width: 78px;
+  height: 78px;
+  border-color: oklch(0.88 0.12 86 / 70%);
+  background:
+    radial-gradient(circle at 40% 32%, oklch(0.34 0.1 82 / 96%), oklch(0.17 0.045 280 / 96%) 72%);
+  color: var(--primary);
+  box-shadow:
+    0 0 34px 7px oklch(0.8 0.14 78 / 18%),
+    0 8px 24px oklch(0.04 0.02 280 / 65%);
+}
+.class-node-druid span {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.class-node-druid em {
+  position: absolute;
+  top: calc(100% + .45rem);
+  font-family: var(--font-sans);
+  font-size: .58rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .18em;
+  color: oklch(0.9 0.02 85 / 76%);
+}
+
+/* ===== Progress friction forge ===== */
+
+.progress-section {
+  background:
+    radial-gradient(circle at 50% 30%, oklch(0.21 0.06 282 / 35%), transparent 46%),
+    oklch(0.12 0.03 276);
+}
+.progress-grid-bg {
+  opacity: .17;
+  background-image:
+    linear-gradient(oklch(0.82 0.13 80 / 10%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.82 0.13 80 / 10%) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask: linear-gradient(180deg, transparent, black 18%, black 82%, transparent);
+}
+.progress-glow {
+  border-radius: 9999px;
+  background: radial-gradient(circle, oklch(0.8 0.14 78 / 10%), transparent 68%);
+  filter: blur(38px);
+}
+.progress-forge {
+  display: grid;
+  gap: .85rem;
+}
+.progress-lane {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) 4.5rem minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 112px;
+  overflow: hidden;
+  border: 1px solid oklch(0.82 0.13 80 / 15%);
+  border-radius: 1.15rem;
+  background: oklch(0.17 0.04 280 / 74%);
+  backdrop-filter: blur(12px);
+  transition: border-color .35s ease, transform .35s ease, box-shadow .35s ease;
+}
+.progress-lane:hover {
+  transform: translateY(-3px);
+  border-color: oklch(0.82 0.13 80 / 34%);
+  box-shadow: 0 16px 44px -18px oklch(0.04 0.02 280 / 80%);
+}
+.progress-index {
+  display: grid;
+  place-items: center;
+  border-right: 1px solid oklch(0.82 0.13 80 / 12%);
+  font-family: var(--font-display);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  color: oklch(0.9 0.02 85 / 34%);
+}
+.progress-before,
+.progress-after {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.2rem 1.35rem;
+  overflow: hidden;
+}
+.progress-before {
+  color: oklch(0.76 0.03 270);
+}
+.progress-after {
+  color: oklch(0.95 0.015 85);
+  background: linear-gradient(90deg, transparent, oklch(0.8 0.14 78 / 5%));
+}
+.progress-kicker {
+  margin-bottom: .38rem;
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .22em;
+  color: oklch(0.8 0.14 78 / 48%);
+}
+.progress-before p,
+.progress-after p {
+  font-size: .96rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.progress-before p { transition: opacity .35s ease, filter .35s ease; }
+.progress-lane:hover .progress-before p {
+  opacity: .5;
+  filter: blur(.25px);
+}
+.progress-strike {
+  position: absolute;
+  left: 1.25rem;
+  right: 1.25rem;
+  top: 50%;
+  height: 1px;
+  transform: scaleX(.18);
+  transform-origin: left;
+  background: linear-gradient(90deg, oklch(0.65 0.2 25 / 76%), oklch(0.65 0.2 25 / 25%), transparent);
+  transition: transform .55s cubic-bezier(.2,.8,.2,1);
+}
+.progress-lane:hover .progress-strike { transform: scaleX(1); }
+.progress-transfer {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.progress-transfer-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, oklch(0.82 0.13 80 / 35%), transparent);
+}
+.progress-transfer-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid oklch(0.82 0.13 80 / 28%);
+  background: oklch(0.16 0.04 278);
+  color: var(--primary);
+  transition: transform .35s ease, box-shadow .35s ease;
+}
+.progress-lane:hover .progress-transfer-core {
+  transform: translateX(.25rem) scale(1.08);
+  box-shadow: 0 0 22px oklch(0.8 0.14 78 / 25%);
+}
+.progress-after-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: linear-gradient(105deg, transparent 20%, oklch(0.8 0.14 78 / 9%) 48%, transparent 75%);
+  transform: translateX(-80%);
+  transition: opacity .35s ease;
+}
+.progress-lane:hover .progress-after-glow {
+  opacity: 1;
+  animation: progress-sweep .85s ease forwards;
+}
+@keyframes progress-sweep {
+  to { transform: translateX(85%); }
+}
+
+@media (max-width: 767px) {
+  .classes-section { min-height: auto; }
+  .classes-vignette {
+    background: linear-gradient(180deg, oklch(0.11 0.03 276 / 94%), oklch(0.11 0.03 276 / 64%) 45%, oklch(0.11 0.03 276 / 94%));
+  }
+  .classes-orbit { width: min(92vw, 420px); }
+  .class-node { width: 48px; height: 48px; }
+  .class-node-druid { width: 66px; height: 66px; }
+
+  .progress-lane {
+    grid-template-columns: 2.6rem 1fr;
+    min-height: 0;
+  }
+  .progress-index { grid-row: 1 / span 3; }
+  .progress-before,
+  .progress-after { padding: 1rem 1.1rem; }
+  .progress-transfer {
+    min-height: 2.2rem;
+    justify-content: start;
+    padding-left: 1.1rem;
+  }
+  .progress-transfer-line { left: 1.1rem; right: 1.1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classes-orbit-halo,
+  .classes-orbit-ring,
+  .classes-orbit-sweep,
+  .classes-core,
+  .class-node,
+  .progress-after-glow {
+    animation: none !important;
+  }
+}
+
 /* Prevent horizontal overflow from parallax/tilt/marquee */
 html, body { overflow-x: hidden; }
 section { overflow-x: clip; }
