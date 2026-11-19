@@ -507,24 +507,77 @@ function Druid() {
 
 function Classes() {
   return (
-    <section aria-labelledby="classes-title" className="px-4 py-24 sm:px-6">
-      <div className="glass shadow-card relative mx-auto max-w-7xl overflow-hidden rounded-3xl">
-        <img src={ss(5)} alt="" width={1920} height={1080} loading="lazy" decoding="async" className="absolute inset-0 -z-0 h-full w-full object-cover opacity-25" />
-        <div className="relative grid gap-10 p-8 sm:p-12 md:grid-cols-[auto_1fr] md:items-center lg:p-16">
-          <div className="text-center md:text-left">
-            <p className="font-display text-gold text-[7rem] font-extrabold leading-none sm:text-[9rem]">8</p>
-            <p className="font-display text-xl font-bold tracking-[0.3em]">CLASSES</p>
+    <section aria-labelledby="classes-title" className="classes-section relative isolate overflow-hidden px-4 py-28 sm:px-6">
+      <img
+        src={ss(5)}
+        alt=""
+        width={1920}
+        height={1080}
+        loading="lazy"
+        decoding="async"
+        className="classes-bg absolute inset-0 -z-30 h-full w-full object-cover"
+        aria-hidden="true"
+      />
+      <div className="classes-vignette absolute inset-0 -z-20" aria-hidden="true" />
+      <div className="hero-particles pointer-events-none absolute inset-0 -z-10 opacity-25" aria-hidden="true" />
+
+      <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <Eyebrow>Play your way</Eyebrow>
+          <h2 id="classes-title" className="text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+            Eight paths. <span className="text-gold">One character.</span>
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-foreground/75 sm:text-lg">
+            Choose from 8 classes — the Druid debuts among them. One character can master different classes, and free stat resets mean an early choice never locks you in.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-2.5">
+            {["8 classes", "Druid debuts", "Change classes", "Free stat resets", "100+ looks"].map((t) => (
+              <span key={t} className="classes-chip">{t}</span>
+            ))}
           </div>
-          <div>
-            <Eyebrow>Play your way</Eyebrow>
-            <h2 id="classes-title" className="text-3xl font-bold sm:text-4xl">Pick a path. Change it later.</h2>
-            <p className="mt-4 max-w-xl text-muted-foreground sm:text-lg">Choose from 8 classes — the Druid debuts among them. One character can master different classes, and free stat resets mean an early choice never locks you in.</p>
-            <ul className="mt-6 flex flex-wrap gap-2">
-              {["8 classes", "Druid debuts", "Change classes", "Free stat resets", "100+ looks"].map((t) => (
-                <li key={t} className="rounded-full border border-border px-3 py-1 text-sm">{t}</li>
-              ))}
-            </ul>
+
+          <div className="mt-9"><SteamCta label="Choose your path on Steam" /></div>
+        </div>
+
+        <div className="classes-orbit-wrap">
+          <div className="classes-orbit" aria-label="Eight available classes visualized as eight paths">
+            <div className="classes-orbit-halo" aria-hidden="true" />
+            <div className="classes-orbit-ring classes-orbit-ring-a" aria-hidden="true" />
+            <div className="classes-orbit-ring classes-orbit-ring-b" aria-hidden="true" />
+            <div className="classes-orbit-sweep" aria-hidden="true" />
+
+            <div className="classes-core">
+              <span className="classes-eight">8</span>
+              <span className="classes-core-label">CLASSES</span>
+            </div>
+
+            {Array.from({ length: 8 }).map((_, i) => {
+              const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+              const radius = 42;
+              const left = 50 + Math.cos(angle) * radius;
+              const top = 50 + Math.sin(angle) * radius;
+              const druid = i === 2;
+              return (
+                <div
+                  key={i}
+                  className={`class-node ${druid ? "class-node-druid" : ""}`}
+                  style={{
+                    left: `${left}%`,
+                    top: `${top}%`,
+                    animationDelay: `${i * 0.18}s`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <span>{druid ? "D" : String(i + 1).padStart(2, "0")}</span>
+                  {druid && <em>DRUID</em>}
+                </div>
+              );
+            })}
           </div>
+          <p className="mt-5 text-center text-xs uppercase tracking-[0.24em] text-foreground/45">
+            Druid debuts among eight classes
+          </p>
         </div>
       </div>
     </section>
@@ -540,18 +593,42 @@ const FRICTION = [
 
 function Friction() {
   return (
-    <section id="progress" aria-labelledby="progress-title" className="px-4 py-24 sm:px-6">
-      <div className="mx-auto max-w-5xl">
-        <SectionTitle id="progress-title" eyebrow="Grind less, play more" title={<>Old frustrations, <span className="text-gold">official answers</span></>} />
-        <ul className="space-y-3">
-          {FRICTION.map(([a, b]) => (
-            <li key={a} className="glass grid items-center gap-3 rounded-2xl p-5 sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
-              <p className="text-muted-foreground line-through decoration-destructive/70">{a}</p>
-              <span aria-hidden="true" className="hidden text-2xl text-primary sm:block">→</span>
-              <p className="font-semibold"><span className="sr-only">Answer: </span>{b}</p>
-            </li>
+    <section id="progress" aria-labelledby="progress-title" className="progress-section relative isolate overflow-hidden px-4 py-28 sm:px-6">
+      <div className="progress-grid-bg absolute inset-0 -z-20" aria-hidden="true" />
+      <div className="progress-glow absolute left-1/2 top-1/2 -z-10 h-[38rem] w-[38rem] -translate-x-1/2 -translate-y-1/2" aria-hidden="true" />
+
+      <div className="mx-auto max-w-6xl">
+        <SectionTitle
+          id="progress-title"
+          eyebrow="Grind less, play more"
+          title={<>Old frustrations. <span className="text-gold">New answers.</span></>}
+          sub="Hover each path to see the old pain give way to the official feature that answers it."
+        />
+
+        <div className="progress-forge">
+          {FRICTION.map(([pain, answer], i) => (
+            <article key={pain} className="progress-lane">
+              <div className="progress-index" aria-hidden="true">0{i + 1}</div>
+
+              <div className="progress-before">
+                <span className="progress-kicker">OLD FRICTION</span>
+                <p>{pain}</p>
+                <span className="progress-strike" aria-hidden="true" />
+              </div>
+
+              <div className="progress-transfer" aria-hidden="true">
+                <span className="progress-transfer-line" />
+                <span className="progress-transfer-core">→</span>
+              </div>
+
+              <div className="progress-after">
+                <span className="progress-kicker">OFFICIAL ANSWER</span>
+                <p>{answer}</p>
+                <span className="progress-after-glow" aria-hidden="true" />
+              </div>
+            </article>
           ))}
-        </ul>
+        </div>
       </div>
     </section>
   );
